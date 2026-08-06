@@ -1,0 +1,51 @@
+/*************************************************************************
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ * Copyright 2025 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+
+html,
+body,
+#account-menu-entry-point {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body { 
+  overflow: auto;
+}
+body.light {
+  border: 1px solid #D5D5D5;
+  background-color: white;
+}
+
+body.dark {
+  border: 1px solid #545454;
+  background-color: #222222;
+}
+
+html {
+  overscroll-behavior: none;
+}
+
+#skeletonLoadingContainer {
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+#skeletonLoadingContainer.hidden {
+  display: none;
+}

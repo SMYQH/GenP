@@ -1,0 +1,18 @@
+
+/*************************************************************************
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ * Copyright 2026 Adobe. All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+
+(window.webpackJsonp=window.webpackJsonp||[]).push([[64],{Te8T:function(t){t.exports=JSON.parse('{"NewDocumentDialog":{"Presets":{"Name":{"Letter":"Letter","Landscape_3x2":"Landscape, 3 x 2","Landscape_6x4":"Landscape, 6 x 4","Landscape_7x5_Default":"Landscape, 7 x 5 (Default)","Landscape_10x8":"Landscape, 10 x 8","Portrait_2x3":"Portrait, 2 x 3","Portrait_4x6":"Portrait, 4 x 6","Portrait_5x7":"Portrait, 5 x 7","Portrait_8x10":"Portrait, 8 x 10","L_portrait":"L portrait","L_landscape":"L landscape","2L_portrait":"2L portrait","2L_landscape":"2L landscape","Four_cut_portrait":"Four cut portrait","Four_cut_landscape":"Four cut landscape","Six_cut_portrait":"Six cut portrait","Six_cut_landscape":"Six cut landscape","Legal":"Legal","Tabloid":"Tabloid","A1":"A1","A2":"A2","A3":"A3","A4":"A4","A5":"A5","A6":"A6","B3":"B3","B3_JIS":"B3 (JIS)","B4":"B4","B4_JIS":"B4 (JIS)","B5":"B5","B5_JIS":"B5 (JIS)","C4":"C4","C5":"C5","C6":"C6","DL":"DL","Social_story":"Social story","Instagram_post_Landscape":"Instagram post, Landscape","Instagram_post_Portrait":"Instagram post, Portrait","Instagram_post_Square":"Instagram post, Square","Instagram_reel_or_story":"Instagram reel or story","Social_profile_picture":"Social profile picture","Facebook_post":"Facebook post","Facebook_story":"Facebook story","Facebook_cover":"Facebook cover","TikTok_video":"TikTok video","YouTube_thumbnail":"YouTube thumbnail","YouTube_banner":"YouTube banner","Twitch_banner":"Twitch banner","X_Twitter_post":"X (Twitter) post","X_Twitter_header":"X (Twitter) header","Pinterest_Pin":"Pinterest Pin","Web_Desktop":"Web Desktop","Web_Laptop":"Web Laptop","Web_Small":"Web Small","Tablet":"Tablet","Mobile_Large":"Mobile Large","Mobile_Standard":"Mobile Standard","Mobile_Small":"Mobile Small","Watch_Large":"Watch Large","Watch_Small":"Watch Small","App_icon":"App icon","Poster":"Poster","Postcard_Small":"Postcard Small","Postcard_Large":"Postcard Large","1000_pixel_grid":"1000 pixel grid","2000_pixel_grid":"2000 pixel grid","1080p":"1080p","720p":"720p","SD_480p":"SD 480p","HD_720p":"HD 720p","FHD_1080p":"FHD 1080p","QHD_2K":"QHD 2K","UHD_4K":"UHD 4K","DCI_4K":"DCI 4K","UHD_8K":"UHD 8K","DCI_8K":"DCI 8K"}},"ResolutionUnit":{"ppcm":"ppcm","ppi":"ppi","Select":"Select a unit for resolution"},"Tabs":{"Print":"Print","Recents":"Recents","SocialMedia":"Social media","WebAndMobile":"Web and mobile","DigitalArt":"Digital art","Video":"Video"},"Units":{"Centimeters":{"Title":"Centimeters","Unit":"cm"},"Inches":{"Title":"Inches","Unit":"in"},"Millimeters":{"Title":"Millimeters","Unit":"mm"},"Picas":{"Title":"Picas","Unit":"pc"},"Pixels":{"Title":"Pixels","Unit":"px"},"Points":{"Title":"Points","Unit":"pt"},"Select":"Select a unit for the new document","Title":"Units"}}}')}}]);

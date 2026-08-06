@@ -1,0 +1,82 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Verify third-party binaries
+        run: python verify_binaries.py
+
+      - name: 确定版本
+        id: version
+        run: |
+          if ($env:GITHUB_REF -like "refs/tags/v*") {
+              $tag = $env:GITHUB_REF -replace "refs/tags/", ""
+          } else {
+              $au3File = Get-ChildItem -Path "GenP\GenP-*.au3" | Select-Object -First 1
+              if ($au3File -and $au3File.Name -match "GenP-v?([0-9.]+)\.au3") {
+                  $tag = "v$($Matches[1])"
+              } else {
+                  $tag = "v4.2.1-hotfix"
+              }
+          }
+          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Detected version tag: $tag"
+
+      - name: 构建 GenP
+        run: |
+          Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass -Force
+          function global:Read-Host { return 'y' }
+          $env:PSModulePath = @(
+            "$env:USERPROFILE\Documents\WindowsPowerShell\Modules",
+            "C:\Program Files\WindowsPowerShell\Modules",
+            "C:\Windows\system32\WindowsPowerShell\v1.0\Modules"
+          ) -join ';'
+          & .\build.ps1
+
+      - name: 查找已构建的可执行文件
+        id: find-exe
+        run: |
+          $exeFile = Get-ChildItem -Path "Release\GenP*.exe" | Select-Object -First 1
+          if (-not $exeFile) {
+              Write-Error "No executable found in Release/"
+              exit 1
+          }
+          "exe_path=$($exeFile.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "exe_name=$($exeFile.Name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          Write-Host "Found: $($exeFile.FullName)"
+
+      - name: 创建或更新 GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $tag = "${{ steps.version.outputs.tag }}"
+          $exePath = "${{ steps.find-exe.outputs.exe_path }}"
+          $exeName = "${{ steps.find-exe.outputs.exe_name }}"
+
+          $null = gh release view $tag 2>&1
+          if ($LASTEXITCODE -eq 0) {
+              Write-Host "Release $tag already exists, uploading assets..."
+              gh release upload $tag "${exePath}#${exeName}" "GenP/config.ini#config.ini" --clobber
+          } else {
+              Write-Host "Creating release $tag..."
+              gh release create $tag --title "GenP $tag" --generate-notes "${exePath}#${exeName}" "GenP/config.ini#config.ini"
+          }

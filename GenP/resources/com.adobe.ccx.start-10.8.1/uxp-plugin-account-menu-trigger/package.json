@@ -1,0 +1,70 @@
+{
+  "name": "@pandora/uxp-plugin-account-menu-trigger",
+  "version": "1.40.0",
+  "main": "index.js",
+  "type": "module",
+  "sideEffects": [
+    "./src/webview/components/focusTrap/*.*"
+  ],
+  "private": true,
+  "description": "UXP UAM Plugin",
+  "keywords": [],
+  "author": "stivan <stivan@adobe.com>",
+  "license": "SEE LICENSE IN license.txt",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "dist"
+  ],
+  "onCallContact": {
+    "name": "Adobe Account",
+    "email": "AccountManagement-Bucharest@adobe.com",
+    "url": "#account-mgmt"
+  },
+  "jestSonar": {
+    "reportPath": "./out/unit/tests",
+    "reportFile": "test-reporter.xml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@git.corp.adobe.com:PandoraUI/account-management.git",
+    "directory": "packages/uxp-plugin-account-menu-trigger"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:uxp": "webpack --mode production",
+    "build:uxp:local": "webpack --mode development",
+    "build:uxp:hs": "webpack --mode production --env plugin=hs",
+    "build:uxp:hs:dev": "webpack --mode development --env plugin=hs",
+    "build:hs:legacy": "webpack --mode development --env plugin=hsLegacy && node -e \"const fs=require('fs'); const d='uxp-plugin-account-menu-trigger'; fs.copyFileSync(d+'/homescreenMain.bundle.js',d+'/main.bundle.js'); fs.copyFileSync(d+'/hs-legacy-manifest.json',d+'/manifest.json');\"",
+    "watch": " webpack --watch --mode development",
+    "watch:hs": "webpack --watch --mode development --env plugin=hs",
+    "clean": "rimraf lib dist esm out tsconfig.tsbuildinfo *.xml",
+    "metadata:generate": "registry-scripts component --build",
+    "test": "jest --passWithNoTests --config=jest.config.cjs",
+    "test:watch": "jest --config=jest.config.cjs --watch",
+    "test:coverage": "jest --config=jest.config.cjs --coverage",
+    "test:ssr": "jest --passWithNoTests --preset=../jest.config.ssr.js",
+    "lint": "eslint '**/*.{js,jsx,ts,tsx}' --config ../../eslint.config.mjs",
+    "metadata:edit": "pandora metadata edit"
+  },
+  "dependencies": {
+    "@ccx-public/aup-sdk": "^1.0.614",
+    "@ccx-public/aup-sdk-fallbacks-uam-desktop-stable": "^1.0.1",
+    "@intl/adobe-locales": "^3.0.12",
+    "@pandora/logger": "^1.3.0",
+    "@pandora/mini-app-messaging-types": "^1.5.1",
+    "@pandora/react-account-management-mini-app-utils": "^1.7.1",
+    "@pandora/web-component-account-menu-skeleton-loading": "^1.3.0",
+    "eventemitter2": "^6.4.9"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "7.25.9",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^9.1.0",
+    "ignore-loader": "^0.1.2",
+    "webpack-bundle-analyzer": "^4.5.0"
+  }
+}

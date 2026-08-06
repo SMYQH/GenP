@@ -1,0 +1,50 @@
+{
+  "name": "Unified Account Menu",
+  "id": "com.adobe.uam",
+  "version": "1.0.0",
+  "main": "index.html",
+  "manifestVersion": 5,
+  "featureFlags": {
+    "enableSWCSupport": true
+  },
+  "requiredPermissions": {
+    "network": {
+      "domains": []
+    },
+    "webview": {
+      "allow": "yes",
+      "domains": ["https://*.adobe.com"],
+      "enableMessageBridge": "localAndRemote",
+      "allowLocalRendering": "yes"
+    }
+  },
+  "entrypoints": [
+    {
+      "type": "command",
+      "id": "closePopover",
+      "label": "closePopover"
+    }
+  ],
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "26.6.0"
+    },
+    {
+      "app": "AI",
+      "minVersion": "29.5.1"
+    },
+    {
+      "app": "premierepro",
+      "minVersion": "25.2.3"
+    },
+    {
+      "app": "ID",
+      "minVersion": "20.3.0"
+    },
+    {
+      "app": "indesign",
+      "minVersion": "20.3.0"
+    }
+  ]
+}

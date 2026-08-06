@@ -1,0 +1,172 @@
+/*************************************************************************
+ * ADOBE CONFIDENTIAL
+ * ___________________
+ *
+ * Copyright 2025 Adobe
+ * All Rights Reserved.
+ *
+ * NOTICE: All information contained herein is, and remains
+ * the property of Adobe and its suppliers, if any. The intellectual
+ * and technical concepts contained herein are proprietary to Adobe
+ * and its suppliers and are protected by all applicable intellectual
+ * property laws, including trade secret and copyright laws.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Adobe.
+ **************************************************************************/
+
+/*
+* In theory UXP supports CSS variables, but in practice it seem to work.
+* We'll use for the moment the hex values directly and improve it at a later time.
+*/
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#triggerContainer {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* 
+ * We need a dedicated hover wrapper because UXP interprets hovering on any direct child as hovering on the parent.
+  * This means that if we have a hover effect on the triggerContainer
+  * it will apply the hover style when hovering over the overlay as well. 
+*/
+#triggerHoverWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+#triggerHoverWrapper.light:hover {
+  background-color: #e1e1e1;
+}
+#triggerHoverWrapper.dark:hover {
+  background-color: #4a4a4a;
+}
+#trigger {
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  outline-offset: 2px;
+  outline: none;
+  width: 24px;
+  height: 24px;
+}
+
+#trigger:focus {
+  outline-radius: 4px;
+  outline: rgb(38, 128, 235) solid 2px;
+}
+
+#trigger.show {
+  display: inline-block;
+}
+
+#container {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#overlay {
+  position: absolute;
+  height: 1px;
+  min-width: 360px;
+  right: 0;
+  top: 100%;
+  left: initial;
+  margin-top: 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  cursor: auto;
+  transform: translate3d(0, 0, 0);
+  display: none;
+}
+/* Illustrator scale: host scales the overlay; min-width must match getOverlaySize so we don't get 360px scaled. */
+#overlay.overlay-scale-small {
+  min-width: 360px;
+}
+/* 360px / 1.25 scale */
+#overlay.overlay-scale-medium {
+  min-width: 288px;
+}
+/* 360px / 1.5 scale * 1.25 scale */
+#overlay.overlay-scale-large {
+  min-width: 300px;
+}
+#overlay.light {
+  background-color: white;
+}
+#overlay.dark {
+  background-color: #222222;
+}
+#overlay.show {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#overlay.detached {
+  /* "visibility: hidden" does not work in Photoshop. */
+  top: -10000%;
+  left: -10000%;
+}
+
+#uamContainer {
+  width: 100%;
+  height: 100%;
+}
+
+webview.light {
+  background-color: white;
+}
+webview.dark {
+  background-color: #222222;
+}
+
+webview {
+  /* Important Note: Setting height:100% on the webview element will break the Popup rendering inside Drover based applications when using the UXP Popup component */
+  width: 100%;
+}
+#webview-LegacyPanelForHS {
+  height: 100%;
+}
+
+/* Workspace integration Popup content container styles */
+#popupContentContainer {
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+  height: 294px;
+}
+#popupContentContainer.dark {
+  background-color: #222222;
+}
+#popupContentContainer.light {
+  background-color: #ffffff;
+}
+#uamContainerWorkspace {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}

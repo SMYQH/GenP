@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <title>S_IlluCustomArtboardPortraitMedium_96</title>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <g>
+      <path class="cls-1" d="M71,79H35a3,3,0,0,1-3-3V30a3,3,0,0,1,3-3H57a1,1,0,0,1,0,2H35a1,1,0,0,0-1,1V76a1,1,0,0,0,1,1H71a1,1,0,0,0,1-1V44a1,1,0,0,1,2,0V76A3,3,0,0,1,71,79Z"/>
+      <path class="cls-1" d="M33,23a1,1,0,0,1-1-1V12a1,1,0,0,1,2,0V22A1,1,0,0,1,33,23Z"/>
+      <path class="cls-1" d="M27,29H17a1,1,0,0,1,0-2H27a1,1,0,0,1,0,2Z"/>
+      <path class="cls-1" d="M73,41H63a3,3,0,0,1-3-3V28a1,1,0,0,1,1.707-.707l12,12A1,1,0,0,1,73,41ZM62,30.414V38a1,1,0,0,0,1,1h7.586Z"/>
+    </g>
+  </g>
+</svg>

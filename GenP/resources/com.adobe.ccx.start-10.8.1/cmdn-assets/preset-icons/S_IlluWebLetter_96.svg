@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <path class="cls-1" d="M66.5,76h-37a3,3,0,0,1-3-3V23a3,3,0,0,1,3-3h37a3,3,0,0,1,3,3V73A3,3,0,0,1,66.5,76Zm-37-54a1,1,0,0,0-1,1V73a1,1,0,0,0,1,1h37a1,1,0,0,0,1-1V23a1,1,0,0,0-1-1Z"/>
+    <path class="cls-1" d="M65.5,29.312h-35a.75.75,0,0,1,0-1.5h35a.75.75,0,0,1,0,1.5Z"/>
+    <path class="cls-1" d="M35.062,26.062h-2a.75.75,0,0,1,0-1.5h2a.75.75,0,0,1,0,1.5Z"/>
+  </g>
+</svg>

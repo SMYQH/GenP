@@ -1,0 +1,46 @@
+{
+  "name": "@ccx/cc-photos-importer-uxp",
+  "version": "0.0.83",
+  "description": "",
+  "main": "cc-photos-importer-uxp.js",
+  "scripts": {
+    "build": "rm -rf _dist/* && NODE_ENV=production webpack",
+    "dev": "rm -rf _dist/* && webpack",
+    "test": "gulp test",
+    "createConfidentialHeaders": "node scripts/createConfidentialHeaders.js --",
+    "setupNpmrc": "node scripts/credentials"
+  },
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-ccx-release"
+  },
+  "dependencies": {
+    "bluebird": "^3.4.7"
+  },
+  "devDependencies": {
+    "@ccx/lr-importer-uxp": "0.0.60",
+    "@torqjs/animate": "0.6.9",
+    "@torqjs/geometry": "0.6.9",
+    "@torqjs/interaction": "0.6.15",
+    "@torqjs/intl": "0.7.12",
+    "@torqjs/keyboard": "0.6.8",
+    "@torqjs/router": "^0.6.19",
+    "@torqjs/serializer": "0.6.23",
+    "@torqjs/state": "0.7.13",
+    "@torqjs/torq": "0.7.17",
+    "@torqjs/virtual-scroller": "0.6.22",
+    "@torqjs/webpack": "^0.10.4",
+    "@torqjs/webpack-plugin": "git+ssh://git@git.corp.adobe.com:torq/torq-webpack-plugin.git",
+    "copy-webpack-plugin": "^4.6.0",
+    "css-loader": "^0.28.11",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.11",
+    "less": "^3.0.1",
+    "less-loader": "^4.1.0",
+    "raw-loader": "^0.5.1",
+    "style-loader": "^0.20.3",
+    "uglifyjs-webpack-plugin": "1.3.0",
+    "webpack": "^3.6.0"
+  }
+}

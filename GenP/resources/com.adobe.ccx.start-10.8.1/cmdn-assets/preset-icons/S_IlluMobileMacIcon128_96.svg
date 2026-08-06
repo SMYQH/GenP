@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <title>S_IlluMobileMacIcon128_96</title>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <g>
+      <path class="cls-1" d="M64,66H32a2,2,0,0,1-2-2V32a2,2,0,0,1,2-2H64a2,2,0,0,1,2,2V64A2,2,0,0,1,64,66ZM32,32V64H64V32Z"/>
+      <circle class="cls-1" cx="33.858" cy="33.858" r="0.75"/>
+      <circle class="cls-1" cx="36.686" cy="36.686" r="0.75"/>
+      <circle class="cls-1" cx="42.343" cy="42.343" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="53.657" cy="53.657" r="0.75"/>
+      <circle class="cls-1" cx="59.314" cy="59.314" r="0.75"/>
+      <circle class="cls-1" cx="62.142" cy="62.142" r="0.75"/>
+      <circle class="cls-1" cx="62.142" cy="33.858" r="0.75"/>
+      <circle class="cls-1" cx="59.314" cy="36.686" r="0.75"/>
+      <circle class="cls-1" cx="53.657" cy="42.343" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="44" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="52" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="44" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="52" r="0.75"/>
+      <circle class="cls-1" cx="42.343" cy="53.657" r="0.75"/>
+      <circle class="cls-1" cx="36.913" cy="43.408" r="0.75"/>
+      <circle class="cls-1" cx="59.087" cy="52.592" r="0.75"/>
+      <circle class="cls-1" cx="52.592" cy="36.913" r="0.75"/>
+      <circle class="cls-1" cx="43.408" cy="59.087" r="0.75"/>
+      <circle class="cls-1" cx="36.913" cy="43.408" r="0.75"/>
+      <circle class="cls-1" cx="59.087" cy="52.592" r="0.75"/>
+      <circle class="cls-1" cx="52.592" cy="36.913" r="0.75"/>
+      <circle class="cls-1" cx="43.408" cy="59.087" r="0.75"/>
+      <circle class="cls-1" cx="36" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="60" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="36" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="60" r="0.75"/>
+      <circle class="cls-1" cx="36" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="60" cy="48" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="36" r="0.75"/>
+      <circle class="cls-1" cx="48" cy="60" r="0.75"/>
+      <circle class="cls-1" cx="36.913" cy="52.592" r="0.75"/>
+      <circle class="cls-1" cx="59.087" cy="43.408" r="0.75"/>
+      <circle class="cls-1" cx="43.408" cy="36.913" r="0.75"/>
+      <circle class="cls-1" cx="52.592" cy="59.087" r="0.75"/>
+      <circle class="cls-1" cx="36.913" cy="52.592" r="0.75"/>
+      <circle class="cls-1" cx="59.087" cy="43.408" r="0.75"/>
+      <circle class="cls-1" cx="43.408" cy="36.913" r="0.75"/>
+      <circle class="cls-1" cx="52.592" cy="59.087" r="0.75"/>
+      <circle class="cls-1" cx="36.686" cy="59.314" r="0.75"/>
+      <circle class="cls-1" cx="33.858" cy="62.142" r="0.75"/>
+      <circle class="cls-1" cx="39.515" cy="39.515" r="0.75"/>
+      <circle class="cls-1" cx="45.172" cy="45.172" r="0.75"/>
+      <circle class="cls-1" cx="50.828" cy="50.828" r="0.75"/>
+      <circle class="cls-1" cx="56.485" cy="56.485" r="0.75"/>
+      <circle class="cls-1" cx="56.485" cy="39.515" r="0.75"/>
+      <circle class="cls-1" cx="50.828" cy="45.172" r="0.75"/>
+      <circle class="cls-1" cx="45.172" cy="50.828" r="0.75"/>
+      <circle class="cls-1" cx="39.515" cy="56.485" r="0.75"/>
+    </g>
+  </g>
+</svg>

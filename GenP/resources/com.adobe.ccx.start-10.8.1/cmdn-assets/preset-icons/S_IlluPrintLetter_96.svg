@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <title>S_IlluPrintLetter_96</title>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <path class="cls-1" d="M69,35H58a3,3,0,0,1-3-3V21a1,1,0,0,1,1.707-.707l13,13A1,1,0,0,1,69,35ZM57,23.415V32a1,1,0,0,0,1,1h8.586Z"/>
+    <path class="cls-1" d="M67,76H30a3,3,0,0,1-3-3V23a3,3,0,0,1,3-3H52a1,1,0,1,1,0,2H30a1,1,0,0,0-1,1V73a1,1,0,0,0,1,1H67a1,1,0,0,0,1-1V37.94a1,1,0,0,1,2,0V73A3,3,0,0,1,67,76Z"/>
+  </g>
+</svg>

@@ -1,0 +1,1 @@
+{"version":3,"file":"setOrRemoveAttribute.d.ts","sourceRoot":"","sources":["../../../../src/utils/setOrRemoveAttribute.ts"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;4EAgB4E;AAE5E;;;;GAIG;AACH,wBAAgB,oBAAoB,CAChC,OAAO,EAAE,WAAW,EACpB,IAAI,EAAE,MAAM,EACZ,KAAK,EAAE,OAAO,EACd,OAAO,CAAC,EAAE;IAAE,SAAS,CAAC,EAAE,OAAO,CAAC;IAAC,MAAM,CAAC,EAAE,OAAO,CAAA;CAAE,GACpD,IAAI,CAUN"}

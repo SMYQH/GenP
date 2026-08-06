@@ -1,0 +1,51 @@
+{
+  "id": "com.adobe.uxp.express-template-picker",
+  "name": "Express Templates",
+  "version": "1.0.8",
+  "main": "index.html",
+  "requiredPermissions": {
+    "webview": {
+       "allow": "yes",
+       "enableMessageBridge": "localAndRemote"
+    }
+  },
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "26.10.0"
+    },
+    {
+      "app": "ID",
+      "minVersion": "20.5.0"
+    },
+    {
+      "app": "premierepro",
+      "minVersion": "25.3.0"
+    },
+    {
+      "app": "AI",
+      "minVersion": "29.5.0"
+    },
+    {
+			"app": "aftereffects",
+			"minVersion": "25.4.0"
+    }
+  ],
+  "manifestVersion": 5,
+  "entrypoints": [
+    {
+      "type": "command",
+      "id": "showFromEditMenu",
+      "label": {
+        "default": "Express Templates"
+      }
+    },
+    {
+      "type": "command",
+      "id": "showFromHomeScreen",
+      "label": {
+        "default": "Express Templates"
+      }
+    }
+  ]
+}

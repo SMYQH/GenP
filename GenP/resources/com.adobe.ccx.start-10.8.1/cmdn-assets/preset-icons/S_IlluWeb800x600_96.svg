@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <title>S_IlluWeb800x600_96</title>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <path class="cls-1" d="M68.5,66h-41a3,3,0,0,1-3-3V33a3,3,0,0,1,3-3h41a3,3,0,0,1,3,3V63A3,3,0,0,1,68.5,66Zm-41-34a1,1,0,0,0-1,1V63a1,1,0,0,0,1,1h41a1,1,0,0,0,1-1V33a1,1,0,0,0-1-1Z"/>
+    <path class="cls-1" d="M67.5,38.361h-39a.75.75,0,1,1,0-1.5h39a.75.75,0,0,1,0,1.5Z"/>
+    <path class="cls-1" d="M32.5,35.528h-2a.75.75,0,1,1,0-1.5h2a.75.75,0,0,1,0,1.5Z"/>
+  </g>
+</svg>

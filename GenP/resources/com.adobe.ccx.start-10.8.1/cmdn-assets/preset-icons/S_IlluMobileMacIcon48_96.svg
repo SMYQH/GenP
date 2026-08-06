@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+    </style>
+  </defs>
+  <title>S_IlluMobileMacIcon48_96</title>
+  <g id="ICONS_96" data-name="ICONS 96">
+    <g>
+      <path class="cls-1" d="M60,62H36a2,2,0,0,1-2-2V36a2,2,0,0,1,2-2H60a2,2,0,0,1,2,2V60A2,2,0,0,1,60,62ZM36,36V60H60V36Z"/>
+      <circle class="cls-1" cx="41.401" cy="54.601" r="0.75"/>
+      <path class="cls-1" d="M43.07,51.872a.75.75,0,1,0,1.061,0A.754.754,0,0,0,43.07,51.872Z"/>
+      <path class="cls-1" d="M45.269,49.672a.75.75,0,1,0,1.061,0A.756.756,0,0,0,45.269,49.672Z"/>
+      <path class="cls-1" d="M38.672,56.27a.75.75,0,1,0,1.061,0A.756.756,0,0,0,38.672,56.27Z"/>
+      <path class="cls-1" d="M49.667,45.274a.75.75,0,0,0,1.061,1.061.75.75,0,0,0-1.061-1.061Z"/>
+      <path class="cls-1" d="M47.469,47.473a.756.756,0,0,0,0,1.061.75.75,0,1,0,0-1.061Z"/>
+      <path class="cls-1" d="M57.328,38.665a.75.75,0,1,0,0,1.06A.748.748,0,0,0,57.328,38.665Z"/>
+      <path class="cls-1" d="M51.869,43.063a.75.75,0,1,0,1.061,0A.756.756,0,0,0,51.869,43.063Z"/>
+      <circle class="cls-1" cx="54.599" cy="41.394" r="0.75"/>
+      <circle class="cls-1" cx="54.599" cy="54.601" r="0.75"/>
+      <path class="cls-1" d="M52.93,51.872a.75.75,0,1,1-1.061,0A.754.754,0,0,1,52.93,51.872Z"/>
+      <path class="cls-1" d="M50.731,49.672a.75.75,0,1,1-1.061,0A.756.756,0,0,1,50.731,49.672Z"/>
+      <path class="cls-1" d="M57.328,56.27a.75.75,0,1,1-1.061,0A.756.756,0,0,1,57.328,56.27Z"/>
+      <path class="cls-1" d="M46.333,45.274a.75.75,0,0,1-1.061,1.061.75.75,0,0,1,1.061-1.061Z"/>
+      <path class="cls-1" d="M48.531,47.473a.756.756,0,0,1,0,1.061.75.75,0,1,1,0-1.061Z"/>
+      <path class="cls-1" d="M38.672,38.665a.75.75,0,1,1,0,1.06A.748.748,0,0,1,38.672,38.665Z"/>
+      <path class="cls-1" d="M44.131,43.063a.75.75,0,1,1-1.061,0A.756.756,0,0,1,44.131,43.063Z"/>
+      <circle class="cls-1" cx="41.401" cy="41.394" r="0.75"/>
+      <circle class="cls-1" cx="44.43" cy="56.624" r="0.75" transform="translate(-18.287 21.313) rotate(-22.5)"/>
+      <circle class="cls-1" cx="51.568" cy="39.372" r="0.75" transform="translate(-11.141 22.731) rotate(-22.5)"/>
+      <circle class="cls-1" cx="56.622" cy="51.573" r="0.75" transform="translate(-15.426 25.594) rotate(-22.5)"/>
+      <circle class="cls-1" cx="39.376" cy="44.422" r="0.75" transform="translate(-14.002 18.45) rotate(-22.5)"/>
+      <circle class="cls-1" cx="48.002" cy="57.334" r="0.75" transform="translate(-26.482 50.735) rotate(-45)"/>
+      <circle class="cls-1" cx="47.995" cy="38.663" r="0.75" transform="translate(-13.281 45.261) rotate(-45)"/>
+      <circle class="cls-1" cx="57.334" cy="48.002" r="0.75" transform="translate(-17.15 54.6) rotate(-45)"/>
+      <circle class="cls-1" cx="38.663" cy="47.995" r="0.75" transform="translate(-22.613 41.396) rotate(-45)"/>
+      <circle class="cls-1" cx="51.573" cy="56.623" r="0.75" transform="translate(-20.475 82.601) rotate(-67.5)"/>
+      <circle class="cls-1" cx="44.422" cy="39.376" r="0.75" transform="translate(-8.956 65.348) rotate(-67.5)"/>
+      <circle class="cls-1" cx="56.624" cy="44.43" r="0.75" transform="translate(-6.093 79.741) rotate(-67.5)"/>
+      <circle class="cls-1" cx="39.372" cy="51.568" r="0.75" transform="translate(-23.338 68.208) rotate(-67.5)"/>
+    </g>
+  </g>
+</svg>
