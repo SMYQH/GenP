@@ -7,17 +7,22 @@ GenP 是一款用 AutoIt 编写的开源 Adobe 补丁工具，通过对 Adobe Cr
 ```text
 .
 ├── GenP/
-│   ├── GenP-v4.2.1.au3   # AutoIt 源代码
-│   ├── config.ini        # 补丁定义与目标文件
-│   └── Skull.ico         # 应用程序图标
+│   ├── resources/
+│   │   ├── com.adobe.ccx.start-10.8.1/  # CCX 启动界面/主页插件模块
+│   │   ├── mitmproxy/                   # 代理拦截与反编译工具
+│   │   ├── RemoveGudeLogs.ps1           # Adobe 验证日志清理脚本
+│   │   ├── UpdateHostsFile.ps1          # Hosts 文件自动更新脚本
+│   │   └── hosts                        # 预设的 Adobe 验证域名屏蔽列表
+│   ├── GenP-v4.2.1.au3                  # AutoIt 主程序源代码
+│   ├── config.ini                       # 补丁规则与目标特征文件
+│   └── Skull.ico                        # 应用图标
 ├── WinTrust/
-│   ├── patch_wintrust.ps1
-│   └── wintrust.dll
+│   ├── patch_wintrust.ps1               # wintrust.dll Hex 补丁脚本
+│   └── wintrust.dll                     # 微软官方原版 wintrust.dll
 ├── UPX/
-│   └── upx-5.0.1-win64.zip
-├── build.ps1             # PowerShell 7 构建脚本
-├── run_build.bat         # 构建入口（以管理员身份运行）
-├── verify_binaries.py    # 二进制校验脚本
+│   └── upx-5.0.1-win64.zip              # UPX 官方发布包（用于给生成的 .exe 打壳压缩）
+├── build.ps1                            # PowerShell 7 构建脚本（管理员）
+├── verify_binaries.py                   # 二进制校验脚本
 └── README.md
 ```
 
