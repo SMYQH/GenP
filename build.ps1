@@ -1,18 +1,17 @@
 <#
 Build GenP
-Requires administrative privileges
-Run with: .\build.ps1 or via run_build.bat
+Run with: .\build.ps1
 #>
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$installBaseDir = Join-Path $env:SystemDrive "GenP-BuildEnv"
+$scriptDir = $PSScriptRoot
+$installBaseDir = Join-Path $scriptDir "BuildEnv"
 $autoItInstallDir = Join-Path $installBaseDir "AutoIt"
 $autoItCoreExe = Join-Path $autoItInstallDir "install\AutoIt3_x64.exe"
 $sciteInstallDir = Join-Path $autoItInstallDir "install\SciTE"
 $wrapperScript = Join-Path $sciteInstallDir "AutoIt3Wrapper\AutoIt3Wrapper.au3"
-$scriptDir = $PSScriptRoot
 $genpDir = Join-Path $scriptDir "GenP"
 $logsDir = Join-Path $scriptDir "Logs"
 $releaseDir = Join-Path $scriptDir "Release"
@@ -144,12 +143,6 @@ function Download-File {
 }
 
 Test-ExecutionPolicy
-
-if (-not (Test-Admin)) {
-    Write-Error "This script must be run as an Administrator. Right-click run_build.bat and select 'Run as administrator'."
-    Stop-Transcript | Out-Null
-    exit 1
-}
 
 if (-not (Test-Path $genpDir)) {
     Write-Error "GenP directory not found at $genpDir."
@@ -298,7 +291,7 @@ if ($hasWinTrust -and $winTrustStatus -eq "patched") {
             Stop-Transcript | Out-Null
             exit 1
         }
-        Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File `"$patchScript`"" -WorkingDirectory $winTrustDir -Wait -NoNewWindow
+        & $patchScript
         $winTrustPatched = Join-Path $winTrustDir "wintrust.dll.patched"
         if (-not (Test-Path $winTrustPatched)) {
             Write-Error "wintrust.dll.patched not found in $winTrustDir after patching"

@@ -11,15 +11,13 @@ $winTrustSource = Join-Path $scriptDir "wintrust.dll"
 $winTrustPatched = Join-Path $scriptDir "wintrust.dll.patched"
 
 function Test-ExecutionPolicy {
-    $policy = Get-ExecutionPolicy -Scope CurrentUser
-    if ($policy -eq 'Restricted' -or $policy -eq 'AllSigned') {
-        Write-Warning "Current execution policy ($policy) may prevent running this script."
-        Write-Host "To allow running scripts, you can set the execution policy to RemoteSigned or Bypass."
-        Write-Host "Run this command in an elevated PowerShell prompt:"
-        Write-Host "    Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force"
-        Write-Host "Alternatively, run this script with: powershell.exe -ExecutionPolicy Bypass -File .\patch.ps1"
-        exit 1
+    try {
+        $policy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
+        if ($policy -and ($policy -eq 'Restricted' -or $policy -eq 'AllSigned')) {
+            Write-Warning "Current execution policy ($policy) may prevent running this script."
+        }
     }
+    catch {}
 }
 
 function Test-FileAccess {

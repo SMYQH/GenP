@@ -1,6 +1,22 @@
+# Build & Output Folders
+BuildEnv/
+Logs/
+Release/
 v*/Logs/
 v*/Release/
-v*/UPX/upx-*-win64/
-v*/GenP/upx.exe
-v*/GenP/wintrust.dll
+
+# Downloaded archives & temporary zips
+autoit-v3.zip
+SciTE4AutoIt3_Portable.zip
 GenP/resources/ccx-start-*.zip
+
+# Extracted & intermediate build binaries
+UPX/upx-*/
+v*/UPX/upx-*/
+GenP/upx.exe
+GenP/wintrust.dll
+WinTrust/wintrust.dll.patched
+*_stripped.au3
+
+# Generated hashes
+*.hashes.txt
