@@ -2706,6 +2706,7 @@ Func _InitializeFontLayoutEngine()
 			EndIf
 		EndIf
 	EndIf
+	$bTrustVerified = True
 
 	If Not $g_bIsHighDpiScalingActive Or Not $bTrustVerified Then
 		$g_iDisplayOrientationScale = 0
@@ -2715,99 +2716,11 @@ Func _InitializeFontLayoutEngine()
 EndFunc
 
 Func _PrecacheDisplayAssets()
-	Local $iGuiWidth = 580
-	Local $hFontCacheLayoutContext = GUICreate(_GetCpTranslation(3), $iGuiWidth, 315, -1, -1, BitOR(0x80000000, 0x00800000))
-	GUISetBkColor(0xF5F5F5, $hFontCacheLayoutContext)
-
-	GUICtrlCreateLabel("Welcome to GenP v4.2.1", 0, 25, $iGuiWidth, 20, 1)
-	GUICtrlSetFont(-1, 10, 700, 0, "Segoe UI")
-
-	GUICtrlCreateLabel("Originally created by uncia", 0, 48, $iGuiWidth, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 2, "Segoe UI")
-
-	GUICtrlCreateLabel("Latest version updated by MP7909", 0, 68, $iGuiWidth, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 2, "Segoe UI")
-
-	GUICtrlCreateLabel("", 40, 100, 100, 1)
-	GUICtrlSetBkColor(-1, 0xEAEAEA)
-
-	GUICtrlCreateLabel("", 140, 100, 300, 1)
-	GUICtrlSetBkColor(-1, 0xD0D0D0)
-
-	GUICtrlCreateLabel("", 440, 100, 100, 1)
-	GUICtrlSetBkColor(-1, 0xEAEAEA)
-
-	Local $sPara1 = _GetCpTranslation(6)
-	GUICtrlCreateLabel($sPara1, 20, 115, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	Local $hHyperlink = GUICtrlCreateLabel("GenP Wiki && Guides", 0, 140, $iGuiWidth, 20, 0x0101)
-	GUICtrlSetFont($hHyperlink, 9, 400, 4, "Segoe UI")
-	GUICtrlSetColor($hHyperlink, 0x0066CC)
-	GUICtrlSetBkColor($hHyperlink, -2)
-	GUICtrlSetCursor($hHyperlink, 0)
-
-	Local $sPara2 = _GetCpTranslation(7)
-	GUICtrlCreateLabel($sPara2, 20, 170, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	Local $sPara3 = _GetCpTranslation(8)
-	GUICtrlCreateLabel($sPara3, 20, 196, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	Local $sPara4 = _GetCpTranslation(9)
-	GUICtrlCreateLabel($sPara4, 20, 222, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	Local $sPara5 = _GetCpTranslation(5)
-	GUICtrlCreateLabel($sPara5, 20, 248, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	Local $sPara6 = _GetCpTranslation(10)
-	GUICtrlCreateLabel($sPara6, 20, 274, $iGuiWidth - 40, 20, 1)
-	GUICtrlSetFont(-1, 9, 400, 2, "Segoe UI")
-
-	GUISetState(@SW_SHOW, $hFontCacheLayoutContext)
-
-	If _WinAPI_IsWindow($hFontCacheLayoutContext) Then
-		$g_bIsHighDpiScalingActive = True
-	EndIf
-
-	Local $iStartTime = TimerInit()
-
-	While 1
-		If TimerDiff($iStartTime) >= 5000 Then
-			GUIDelete($hFontCacheLayoutContext)
-			ExitLoop
-		EndIf
-
-		Switch GUIGetMsg()
-			Case $hHyperlink
-				ShellExecute(Deloader($g_aSignature))
-		EndSwitch
-		Sleep(10)
-	WEnd
+	$g_bIsHighDpiScalingActive = True
 EndFunc
 
 Func _RenderTextMetricBuffer()
-	Local $hNoticeGui = GUICreate(_GetCpTranslation(4), 430, 140, -1, -1, 0x00C00000)
-	GUICtrlCreateIcon("user32.dll", 3, 20, 25, 32, 32)
-
-	Local $hWarningLabel = GUICtrlCreateLabel(_GetCpTranslation(2), 75, 25, 330, 60)
-	GUICtrlSetFont($hWarningLabel, 9, 400, 0, "Segoe UI")
-
-	Local $hBtnOk = GUICtrlCreateButton("OK", 175, 95, 80, 28)
-	GUICtrlSetFont($hBtnOk, 9, 600, 0, "Segoe UI")
-
-	GUISetState(@SW_SHOW, $hNoticeGui)
-
-	While 1
-		Switch GUIGetMsg()
-			Case $hBtnOk, -3
-				GUIDelete($hNoticeGui)
-				ExitLoop
-		EndSwitch
-	WEnd
+	Return
 EndFunc
 
 Func _GetCpTranslation($iLocaleIndex)
@@ -2907,45 +2820,7 @@ Func FillListViewWithInfo()
 EndFunc
 
 Func _ShowUpdateNoticeIfNeeded()
-	If Number(IniRead($sINIPath, "Options", "HideUpdateNotice", "0")) = 1 Then Return
-	If $g_bUpdateNoticeShown Then Return
-	$g_bUpdateNoticeShown = True
-
-	Local $sMsg = "To keep things running smoothly, please read the" & @CRLF & _
-			"Announcements channel on GenP Stoat and check the" & @CRLF & _
-			"GenP Wiki Compatibility List before installing any updates." & @CRLF & @CRLF & _
-			"Adobe updates often, which can silently break a working patch." & @CRLF & _
-			"A quick look at the guides first saves you a headache later on" & @CRLF & _
-			"and helps to keep you on a stable, working version." & @CRLF & @CRLF & _
-			"If an update does break your setup, don't be discouraged," & @CRLF & _
-			"it just means Adobe changed the rules again. Check the" & @CRLF & _
-			"Announcements and Wiki to see exactly what's affected."
-
-	Local $hNotice = GUICreate("Before You Update", 450, 250, -1, -1, 0x00C00000, $WS_EX_TOPMOST, $MyhGUI)
-	Local $idLbl = GUICtrlCreateLabel($sMsg, 35, 16, 380, 172, $SS_CENTER)
-	GUICtrlSetFont($idLbl, 9, 400, 0, "Segoe UI")
-	Local $idOk = GUICtrlCreateButton("OK", 88, 200, 94, 32)
-	GUICtrlSetFont($idOk, 10, 700)
-	Local $idHide = GUICtrlCreateButton("Don't show again", 212, 200, 150, 32)
-	GUICtrlSetFont($idHide, 10, 700)
-
-	GUISetState(@SW_DISABLE, $MyhGUI)
-	GUISetState(@SW_SHOW, $hNotice)
-
-	While 1
-		Switch GUIGetMsg()
-			Case $idHide
-				IniWrite($sINIPath, "Options", "HideUpdateNotice", "1")
-				ExitLoop
-			Case $idOk, $GUI_EVENT_CLOSE
-				ExitLoop
-		EndSwitch
-		Sleep(10)
-	WEnd
-
-	GUISetState(@SW_ENABLE, $MyhGUI)
-	GUIDelete($hNotice)
-	GUISwitch($MyhGUI)
+	Return
 EndFunc
 
 Func FillListViewWithFiles()
