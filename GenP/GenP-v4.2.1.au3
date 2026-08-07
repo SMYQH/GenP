@@ -49,7 +49,6 @@ AutoItSetOption("GUICloseOnESC", 0)
 
 Global $g_Version = "4.2.1"
 Global $g_AppWndTitle = "GenP v" & $g_Version
-Global $g_AppVersion = "GenP" & @CRLF & "Originally created by uncia"
 
 Global $patchStatesINI = @ScriptDir & "\patch_states.ini"
 Global $g_aStateQueue[0][5]
@@ -147,9 +146,6 @@ Global $idBtnAGSInfo, $idBtnFirewallInfo, $idBtnHostsInfo, $idBtnRuntimeInfo, $i
 
 #Au3Stripper_Ignore_Variables=$g_aHitPatternsThisFile
 Global $g_aHitPatternsThisFile[0]
-Global $g_idHyperlinkMain, $g_idHyperlinkOptions, $g_idHyperlinkPopup, $g_idHyperlinkLog
-Global $g_idHyperlinkFW = 0, $g_idHyperlinkHosts = 0, $g_idHyperlinkWT = 0, $g_idHyperlinkAGS = 0, $g_idHyperlinkProxy = 0
-
 Global $idBtnCollapseAll = 0, $idBtnExpandAll = 0
 Global $idBtnCheckAll = 0, $idBtnUncheckAll = 0
 Global $idBtnCheckUnpatched = 0, $idBtnCheckPatched = 0, $idBtnRefresh = 0
@@ -173,6 +169,16 @@ Global $g_bPendingInfoReset = False
 Global $g_bInModifiedMode = False
 Global $g_bAutoPatchPending = False
 Global $g_bAutoPatchRun = False
+
+; Display labels are localized; patch_states.ini keeps its English state values.
+Global Const $g_sUiStatusPatched = "已修补"
+Global Const $g_sUiStatusUnpatched = "未修补"
+Global Const $g_sUiStatusUnchanged = "未变化"
+Global Const $g_sUiStatusInUse = "正在使用"
+Global Const $g_sUiStatusNoBackup = "无备份"
+Global Const $g_sUiStatusPatching = "修补中……"
+Global Const $g_sUiStatusRestoring = "还原中……"
+Global Const $g_sUiStatusVerifying = "校验中……"
 
 Global $g_AppCount = 0
 Global $g_FilesToPatchCount = 0
@@ -291,8 +297,6 @@ Global $SelectedApps = []
 Global $sDefaultDomainListURL = "https://a.dove.isdumb.one/list.txt"
 Global $sCurrentDomainListURL = IniRead($sINIPath, "Options", "CustomDomainListURL", $sDefaultDomainListURL)
 Global $g_iDisplayOrientationScale = 1
-Global $g_iHyperlinkClickTime = 0
-Global Const $STN_CLICKED = 0
 
 Local $tTargetFileList = IniReadSection($sINIPath, "TargetFiles")
 Global $TargetFileList[0]
@@ -311,8 +315,6 @@ For $i = 1 To UBound($aSpecialFiles) - 1
 		$g_sRequiresGood1Files = $g_sRequiresGood1Files & StringLower($aSpecialFiles[$i][0]) & "|"
 	EndIf
 Next
-Global $g_aSignature = "r~~z}D99""sus8nl%o|:8myw9qoxz7q sno}9"
-
 If $CmdLine[0] = 1 And $CmdLine[1] = "-updatehosts" Then
 	UpdateHostsFile()
 	Exit
@@ -519,7 +521,7 @@ While 1
 			$g_mCheckedState.RemoveAll()
 			_ResetScanCounters()
 			FillListViewWithInfo()
-			MemoWrite(@CRLF & "Path" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "Waiting for user action.")
+			MemoWrite(@CRLF & "路径" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "等待用户操作。")
 			GUICtrlSetState($idButtonStop, $GUI_HIDE)
 			GUICtrlSetState($idButtonSearch, $GUI_SHOW)
 			GUICtrlSetState($idButtonSearch, $GUI_ENABLE)
@@ -533,7 +535,7 @@ While 1
 		Case $idMsg = $idButtonSearch
 			$fInterrupt = 0
 			$g_bIsPatching = True
-			GUICtrlSetData($idLog, "Activity Log" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP Version: " & $g_Version & @CRLF & "Config Version: " & $ConfigVerVar & @CRLF)
+			GUICtrlSetData($idLog, "活动日志" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP 版本：" & $g_Version & @CRLF & "配置版本：" & $ConfigVerVar & @CRLF)
 			GUICtrlSetState($idButtonSearch, $GUI_HIDE)
 			GUICtrlSetState($idButtonStop, $GUI_SHOW)
 			ToggleLog(0)
@@ -663,7 +665,7 @@ While 1
 			Local $iChecked = 0
 			For $i = 0 To $iCt - 1
 				Local $sStatus = _GUICtrlListView_GetItemText($idListview, $i, 2)
-				If $sStatus <> "Patched" Then
+				If $sStatus <> $g_sUiStatusPatched Then
 					_GUICtrlListView_SetItemChecked($idListview, $i, 1)
 					$iChecked += 1
 				Else
@@ -678,7 +680,7 @@ While 1
 			Local $iChecked = 0
 			For $i = 0 To $iCt - 1
 				Local $sStatus = _GUICtrlListView_GetItemText($idListview, $i, 2)
-				If $sStatus = "Patched" Then
+				If $sStatus = $g_sUiStatusPatched Then
 					_GUICtrlListView_SetItemChecked($idListview, $i, 1)
 					$iChecked += 1
 				Else
@@ -839,7 +841,7 @@ While 1
 					_GUICtrlListView_SetItemSelected($idListview, $i)
 					$ItemFromList = _GUICtrlListView_GetItemText($idListview, $i, 1)
 
-					_GUICtrlListView_SetItemText($idListview, $i, "Patching...", 2)
+					_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusPatching, 2)
 
 					_GUICtrlListView_EnsureVisible($idListview, $i, 0)
 
@@ -871,9 +873,9 @@ While 1
 					EndIf
 
 					If FileExists($ItemFromList & ".bak") Then
-						_GUICtrlListView_SetItemText($idListview, $i, "Patched", 2)
+						_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusPatched, 2)
 					Else
-						_GUICtrlListView_SetItemText($idListview, $i, "Unchanged", 2)
+						_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusUnchanged, 2)
 					EndIf
 
 					$iDone += 1
@@ -911,7 +913,7 @@ While 1
 				_SendMessageL($g_idListview, $WM_SETREDRAW, False, 0)
 				While $iRow >= 0
 					Local $sStatusMod = _GUICtrlListView_GetItemText($g_idListview, $iRow, 2)
-					If $sStatusMod = "Patched" Then
+					If $sStatusMod = $g_sUiStatusPatched Then
 						_GUICtrlListView_DeleteItem($g_idListview, $iRow)
 					Else
 						$iStillTodo += 1
@@ -961,7 +963,7 @@ While 1
 
 			UpdateUIState()
 
-			MemoWrite(@CRLF & "Path" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "waiting for user action")
+			MemoWrite(@CRLF & "路径" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "等待用户操作")
 			GUICtrlSetState($idListview, $GUI_ENABLE)
 			GUICtrlSetState($idButtonSearch, $GUI_ENABLE)
 			GUICtrlSetState($idButtonCustomFolder, $GUI_ENABLE)
@@ -991,7 +993,7 @@ While 1
 		Case $idMsg = $idBtnModified
 			$fInterrupt = 0
 			$g_bIsPatching = True
-			GUICtrlSetData($idLog, "Activity Log" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP Version: " & $g_Version & @CRLF & "Config Version: " & $ConfigVerVar & @CRLF)
+			GUICtrlSetData($idLog, "活动日志" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP 版本：" & $g_Version & @CRLF & "配置版本：" & $ConfigVerVar & @CRLF)
 			GUICtrlSetState($idButtonSearch, $GUI_HIDE)
 			GUICtrlSetState($idButtonStop, $GUI_SHOW)
 			ToggleLog(0)
@@ -1039,7 +1041,7 @@ While 1
 				ContinueLoop
 			EndIf
 
-			GUICtrlSetData($idLog, "Activity Log" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP Version: " & $g_Version & "" & @CRLF & "Config Version: " & $ConfigVerVar & "" & @CRLF)
+			GUICtrlSetData($idLog, "活动日志" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP 版本：" & $g_Version & "" & @CRLF & "配置版本：" & $ConfigVerVar & "" & @CRLF)
 			ToggleLog(0)
 			$g_bIsPatching = True
 
@@ -1087,7 +1089,7 @@ While 1
 					$ItemFromList = _GUICtrlListView_GetItemText($idListview, $i, 1)
 					_ArrayAdd($aRestoredPaths, $ItemFromList)
 
-					_GUICtrlListView_SetItemText($idListview, $i, "Restoring...", 2)
+					_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusRestoring, 2)
 					_SubProgressWrite(50)
 
 					_GUICtrlListView_EnsureVisible($idListview, $i, 0)
@@ -1095,12 +1097,12 @@ While 1
 					Local $bOk = RestoreFile($ItemFromList)
 
 					If $bOk = 1 Then
-						_GUICtrlListView_SetItemText($idListview, $i, "Unpatched", 2)
+						_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusUnpatched, 2)
 					ElseIf $bOk = -1 Then
-						_GUICtrlListView_SetItemText($idListview, $i, "In use", 2)
+						_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusInUse, 2)
 						_ArrayAdd($aUnrestoredInUse, $ItemFromList)
 					Else
-						_GUICtrlListView_SetItemText($idListview, $i, "No backup", 2)
+						_GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusNoBackup, 2)
 					EndIf
 
 					_SubProgressWrite(100)
@@ -1147,7 +1149,7 @@ While 1
 
 			UpdateUIState()
 
-			MemoWrite(@CRLF & "Path" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "waiting for user action")
+			MemoWrite(@CRLF & "路径" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "等待用户操作")
 
 			GUICtrlSetState($idListview, $GUI_ENABLE)
 			GUICtrlSetState($idButtonCustomFolder, $GUI_ENABLE)
@@ -1334,7 +1336,7 @@ While 1
 			$g_sWinTrustPath = $sSelected
 			$g_sCustomWinTrustPath = $sSelected
 			$bUseCustomWinTrust = 1
-			GUICtrlSetData($idLabelTrustPath, "Path: " & $g_sWinTrustPath)
+			GUICtrlSetData($idLabelTrustPath, "路径：" & $g_sWinTrustPath)
 			IniWrite($sINIPath, "Custom_WinTrust", "Path", $g_sWinTrustPath)
 			IniWrite($sINIPath, "Options", "UseCustomWinTrust", "1")
 			IniDelete($sINIPath, "Options", "WinTrustPath")
@@ -1509,15 +1511,15 @@ Func MainGui()
 	$hTab = GUICtrlCreateTab(0, 1, 597, 610, $TCS_FIXEDWIDTH)
 	_SendMessage(GUICtrlGetHandle($hTab), 0x1329, 0, 74)
 
-	$hMainTab = GUICtrlCreateTabItem("Main")
+	$hMainTab = GUICtrlCreateTabItem("主页")
 	$idListview = GUICtrlCreateListView("", 10, 35, 575, 385)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 	$g_idListview = GUICtrlGetHandle($idListview)
 	_GUICtrlListView_SetExtendedListViewStyle($g_idListview, BitOR($LVS_EX_CHECKBOXES, $LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES, $LVS_EX_DOUBLEBUFFER))
 	_GUICtrlListView_SetItemCount($idListview, UBound($FilesToPatch))
 	_GUICtrlListView_AddColumn($idListview, "", 20)
-	_GUICtrlListView_AddColumn($idListview, "  App File", 445, 2)
-	_GUICtrlListView_AddColumn($idListview, "Status", 85, 2)
+	_GUICtrlListView_AddColumn($idListview, "  应用文件", 445, 2)
+	_GUICtrlListView_AddColumn($idListview, "状态", 85, 2)
 
 	_GUICtrlListView_EnableGroupView($idListview)
 	_GUICtrlListView_InsertGroup($idListview, -1, 1, "", 1)
@@ -1525,23 +1527,23 @@ Func MainGui()
 
 	FillListViewWithInfo()
 
-	$idBtnUncheckAll = GUICtrlCreateButton("Uncheck All", 28, 430, 94, 25)
+	$idBtnUncheckAll = GUICtrlCreateButton("全部取消", 28, 430, 94, 25)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnCheckAll = GUICtrlCreateButton("Check All", 140, 430, 94, 25)
+	$idBtnCheckAll = GUICtrlCreateButton("全部选中", 140, 430, 94, 25)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnCheckUnpatched = GUICtrlCreateButton("Unpatched", 251, 430, 94, 25)
+	$idBtnCheckUnpatched = GUICtrlCreateButton("未修补", 251, 430, 94, 25)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnCheckPatched = GUICtrlCreateButton("Patched", 363, 430, 94, 25)
+	$idBtnCheckPatched = GUICtrlCreateButton("已修补", 363, 430, 94, 25)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnRefresh = GUICtrlCreateButton("Refresh", 475, 430, 94, 25)
+	$idBtnRefresh = GUICtrlCreateButton("刷新", 475, 430, 94, 25)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
@@ -1563,34 +1565,34 @@ Func MainGui()
 	GUICtrlSetColor($idSubProgress, 0x00A2E8)
 	GUICtrlSetResizing(-1, $GUI_DOCKVCENTER)
 
-	$idButtonCustomFolder = GUICtrlCreateButton(" Path", 28, 520, 94, 32)
+	$idButtonCustomFolder = GUICtrlCreateButton(" 路径", 28, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetImage(-1, "imageres.dll", -4, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idButtonSearch = GUICtrlCreateButton(" Search", 140, 520, 94, 32)
+	$idButtonSearch = GUICtrlCreateButton(" 搜索", 140, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetImage(-1, "imageres.dll", -8, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idButtonStop = GUICtrlCreateButton(" Stop", 140, 520, 94, 32)
+	$idButtonStop = GUICtrlCreateButton(" 停止", 140, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetState(-1, $GUI_HIDE)
 	GUICtrlSetImage(-1, "imageres.dll", -8, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnCure = GUICtrlCreateButton(" Patch", 251, 520, 94, 32)
+	$idBtnCure = GUICtrlCreateButton(" 修补", 251, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetImage(-1, "imageres.dll", -102, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnModified = GUICtrlCreateButton(" Modified", 363, 520, 94, 32)
+	$idBtnModified = GUICtrlCreateButton(" 已修改", 363, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetImage(-1, "imageres.dll", -25, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idBtnRestore = GUICtrlCreateButton(" Restore", 475, 520, 94, 32)
+	$idBtnRestore = GUICtrlCreateButton(" 还原", 475, 520, 94, 32)
 	GUICtrlSetFont(-1, 10, 700)
 	GUICtrlSetState(-1, $GUI_DISABLE)
 	GUICtrlSetImage(-1, "imageres.dll", -113, 0)
@@ -1598,41 +1600,35 @@ Func MainGui()
 
 	$idBtnDeselectAll = GUICtrlCreateDummy()
 
-	$g_idHyperlinkMain = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkMain, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkMain, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkMain, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkMain, 0)
-
 	GUICtrlCreateTabItem("")
 
-	$hOptionsTab = GUICtrlCreateTabItem("Options")
+	$hOptionsTab = GUICtrlCreateTabItem("选项")
 
-	GUICtrlCreateGroup("First Run Options", 5, 35, 585, 90)
+	GUICtrlCreateGroup("首次运行选项", 5, 35, 585, 90)
 
-	$idCreateStates = GUICtrlCreateCheckbox("Create and populate new patch_states.ini (using location set by Path only)", 15, 60, 460, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idCreateStates = GUICtrlCreateCheckbox("创建并填充新的 patch_states.ini（仅使用“路径”设置的位置）", 15, 60, 555, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idCreateStates, $GUI_UNCHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idReconcileStates = GUICtrlCreateCheckbox("Reconcile imported patch_states.ini against current files (using location set by Path only)", 15, 90, 460, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idReconcileStates = GUICtrlCreateCheckbox("将导入的 patch_states.ini 与当前文件校准（仅使用“路径”设置的位置）", 15, 90, 555, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idReconcileStates, $GUI_UNCHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	GUICtrlCreateGroup("Scan Options", 5, 129, 585, 90)
+	GUICtrlCreateGroup("扫描选项", 5, 129, 585, 90)
 
-	$idFindACC = GUICtrlCreateCheckbox("Always search for ACC", 15, 154, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idFindACC = GUICtrlCreateCheckbox("始终搜索 ACC", 15, 154, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bFindACC = 1 Then GUICtrlSetState($idFindACC, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
 	$idEnableMD5 = GUICtrlCreateDummy()
 
-	$idOnlyAFolders = GUICtrlCreateCheckbox("Search in default named folders only", 15, 184, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idOnlyAFolders = GUICtrlCreateCheckbox("仅搜索默认名称的文件夹", 15, 184, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bOnlyAFolders = 1 Then GUICtrlSetState($idOnlyAFolders, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idUseCustomDefault = GUICtrlCreateCheckbox("Use custom default search path:", 300, 154, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idUseCustomDefault = GUICtrlCreateCheckbox("使用自定义默认搜索路径：", 300, 154, 278, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bUseCustomDefault = 1 Then GUICtrlSetState($idUseCustomDefault, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
@@ -1642,59 +1638,59 @@ Func MainGui()
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	GUICtrlCreateGroup("Patch Options", 5, 223, 585, 115)
+	GUICtrlCreateGroup("修补选项", 5, 223, 585, 115)
 
-	$idShowBetaApps = GUICtrlCreateCheckbox("Show Beta apps", 15, 248, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idShowBetaApps = GUICtrlCreateCheckbox("显示 Beta 应用", 15, 248, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bShowBetaApps = 1 Then GUICtrlSetState($idShowBetaApps, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idEnableGood1 = GUICtrlCreateCheckbox("Enable Good patch", 15, 278, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idEnableGood1 = GUICtrlCreateCheckbox("启用 Good 修补", 15, 278, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bEnableGood1 = 1 Then GUICtrlSetState($idEnableGood1, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idShowLaunchBar = GUICtrlCreateCheckbox("Show app launch toolbar", 300, 248, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idShowLaunchBar = GUICtrlCreateCheckbox("显示应用启动栏", 300, 248, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bShowLaunchBar = 1 Then GUICtrlSetState($idShowLaunchBar, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idClearLicCaches = GUICtrlCreateCheckbox("Clear license caches after patching", 15, 308, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idClearLicCaches = GUICtrlCreateCheckbox("修补后清理许可证缓存", 15, 308, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bClearLicCaches = 1 Then GUICtrlSetState($idClearLicCaches, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idEnableNGLFirewall = GUICtrlCreateCheckbox("Enable NGL Firewall rule", 300, 308, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idEnableNGLFirewall = GUICtrlCreateCheckbox("启用 NGL 防火墙规则", 300, 308, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	If $bEnableNGLFirewall = 1 Then GUICtrlSetState($idEnableNGLFirewall, $GUI_CHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idOlderVerDl = GUICtrlCreateCheckbox("Older versions download", 300, 278, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idOlderVerDl = GUICtrlCreateCheckbox("下载旧版本", 300, 278, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idOlderVerDl, $GUI_UNCHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	GUICtrlCreateGroup("Hosts Options", 5, 342, 585, 90)
+	GUICtrlCreateGroup("Hosts 选项", 5, 342, 585, 90)
 
-	$idCustomDomainListLabel = GUICtrlCreateLabel("Hosts List URL:", 15, 367, 80, 20)
-	$idCustomDomainListInput = GUICtrlCreateInput($sCurrentDomainListURL, 95, 364, 485, 22, BitOR($ES_LEFT, $ES_WANTRETURN, $ES_AUTOHSCROLL))
+	$idCustomDomainListLabel = GUICtrlCreateLabel("Hosts 列表网址：", 15, 367, 100, 20)
+	$idCustomDomainListInput = GUICtrlCreateInput($sCurrentDomainListURL, 115, 364, 465, 22, BitOR($ES_LEFT, $ES_WANTRETURN, $ES_AUTOHSCROLL))
 	GUICtrlSetLimit($idCustomDomainListInput, 255)
 	GUICtrlSetResizing($idCustomDomainListInput, $GUI_DOCKWIDTH)
 
-	Global $idTriggerCaptureLaunch = GUICtrlCreateCheckbox("Trigger one-off capture and launch on save", 15, 397, 400, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	Global $idTriggerCaptureLaunch = GUICtrlCreateCheckbox("保存时执行一次捕获并启动", 15, 397, 400, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idTriggerCaptureLaunch, $GUI_UNCHECKED)
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	GUICtrlCreateGroup("Clean Options", 5, 435, 585, 60)
+	GUICtrlCreateGroup("清理选项", 5, 435, 585, 60)
 
-	$idResetOnSave = GUICtrlCreateCheckbox("Reset patch_states.ini", 15, 460, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idResetOnSave = GUICtrlCreateCheckbox("重置 patch_states.ini", 15, 460, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idResetOnSave, $GUI_UNCHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$idFinalCleanCheck = GUICtrlCreateCheckbox("Final Adobe Clean Check", 300, 460, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
+	$idFinalCleanCheck = GUICtrlCreateCheckbox("Adobe 最终清理检查", 300, 460, 275, 25, BitOR($BS_AUTOCHECKBOX, $BS_LEFT))
 	GUICtrlSetState($idFinalCleanCheck, $GUI_UNCHECKED)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
 	GUICtrlCreateGroup("", -99, -99, 1, 1)
 
-	$idOptionsReminder = GUICtrlCreateLabel("Changes will not take effect until saved", 10, 505, 575, 20, $SS_CENTER)
+	$idOptionsReminder = GUICtrlCreateLabel("更改将在保存后生效", 10, 505, 575, 20, $SS_CENTER)
 	GUICtrlSetFont($idOptionsReminder, 9, 400, 0, "Segoe UI")
 	GUICtrlSetColor($idOptionsReminder, 0xC62828)
 	GUICtrlSetState($idOptionsReminder, $GUI_HIDE)
@@ -1703,16 +1699,10 @@ Func MainGui()
 	_WinAPI_SetWindowTheme(GUICtrlGetHandle($g_idOptionsProgress), "", "")
 	GUICtrlSetState($g_idOptionsProgress, $GUI_HIDE)
 
-	$idBtnSaveOptions = GUICtrlCreateButton("Save Options", 247, 540, 110, 32)
+	$idBtnSaveOptions = GUICtrlCreateButton("保存选项", 247, 540, 110, 32)
 	GUICtrlSetImage(-1, "imageres.dll", 5358, 0)
 	GUICtrlSetState($idBtnSaveOptions, $GUI_DISABLE)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
-
-	$g_idHyperlinkOptions = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkOptions, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkOptions, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkOptions, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkOptions, 0)
 
 	GUICtrlCreateTabItem("")
 
@@ -1722,24 +1712,24 @@ Func MainGui()
 	$idLabelWinTrust = GUICtrlCreateLabel($sWinTrustText, (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
 	GUICtrlSetFont($idLabelWinTrust, 10, 700)
 
-	$idBtnToggleWinTrust = GUICtrlCreateButton("Toggle WinTrust", 227, 90, 140, 32)
+	$idBtnToggleWinTrust = GUICtrlCreateButton("切换 WinTrust", 227, 90, 140, 32)
 	GUICtrlSetFont($idBtnToggleWinTrust, 9, 400, 0, "Segoe UI")
 
-	$idBtnDevOverride = GUICtrlCreateButton("Toggle Reg Key", 227, 135, 140, 32)
+	$idBtnDevOverride = GUICtrlCreateButton("切换注册表项", 227, 135, 140, 32)
 	GUICtrlSetFont($idBtnDevOverride, 9, 400, 0, "Segoe UI")
 
-	$idBtnSetTrustPath = GUICtrlCreateButton("Set Trust Path", 227, 225, 140, 32)
+	$idBtnSetTrustPath = GUICtrlCreateButton("设置可信路径", 227, 225, 140, 32)
 	GUICtrlSetFont($idBtnSetTrustPath, 9, 400, 0, "Segoe UI")
 
-	$idLabelTrustPath = GUICtrlCreateLabel("Path: " & $g_sWinTrustPath, 10, 270, 575, 20, $SS_CENTER)
+	$idLabelTrustPath = GUICtrlCreateLabel("路径：" & $g_sWinTrustPath, 10, 270, 575, 20, $SS_CENTER)
 	GUICtrlSetFont($idLabelTrustPath, 9, 400, 0, "Segoe UI")
 	GUICtrlSetColor($idLabelTrustPath, 0x555555)
 
 	GUICtrlCreateLabel( _
-			"Reduce popups by trusting applications that use DLL redirection." & @CRLF & @CRLF & _
-			"This feature manages the required registry entry automatically." & @CRLF & @CRLF & _
-			"You can trust or untrust applications at any time as needed." & @CRLF & @CRLF & _
-			"Credit to Team V.R.", _
+			"信任使用 DLL 重定向的应用，以减少弹窗。" & @CRLF & @CRLF & _
+			"此功能会自动管理所需的注册表项。" & @CRLF & @CRLF & _
+			"你可以随时按需信任或取消信任应用。" & @CRLF & @CRLF & _
+			"感谢 Team V.R.。", _
 			(595 - 580) / 2, 410, 580, 130, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
 
@@ -1747,12 +1737,6 @@ Func MainGui()
 	$idBtnRuntimeInfo = GUICtrlCreateDummy()
 	$idLabelRuntimeInstaller = GUICtrlCreateDummy()
 	$idBtnToggleRuntimeInstaller = GUICtrlCreateDummy()
-
-	$g_idHyperlinkWT = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkWT, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkWT, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkWT, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkWT, 0)
 
 	GUICtrlCreateTabItem("")
 
@@ -1762,160 +1746,134 @@ Func MainGui()
 	$idLabelEditHosts = GUICtrlCreateLabel($sEditHostsText, (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
 	GUICtrlSetFont($idLabelEditHosts, 10, 700)
 
-	$idBtnUpdateHosts = GUICtrlCreateButton("Update hosts", 227, 90, 140, 32)
+	$idBtnUpdateHosts = GUICtrlCreateButton("更新 hosts", 227, 90, 140, 32)
 	GUICtrlSetFont($idBtnUpdateHosts, 9, 400, 0, "Segoe UI")
 
-	$idBtnEditHosts = GUICtrlCreateButton("Edit hosts", 227, 135, 140, 32)
+	$idBtnEditHosts = GUICtrlCreateButton("编辑 hosts", 227, 135, 140, 32)
 	GUICtrlSetFont($idBtnEditHosts, 9, 400, 0, "Segoe UI")
 
-	$idBtnCleanHosts = GUICtrlCreateButton("Clean hosts", 227, 180, 140, 32)
+	$idBtnCleanHosts = GUICtrlCreateButton("清理 hosts", 227, 180, 140, 32)
 	GUICtrlSetFont($idBtnCleanHosts, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnCleanHosts, $GUI_DISABLE)
 
-	$idBtnRestoreHosts = GUICtrlCreateButton("Restore hosts", 227, 225, 140, 32)
+	$idBtnRestoreHosts = GUICtrlCreateButton("还原 hosts", 227, 225, 140, 32)
 	GUICtrlSetState($idBtnRestoreHosts, $GUI_DISABLE)
 	GUICtrlSetFont($idBtnRestoreHosts, 9, 400, 0, "Segoe UI")
 
-	$idBtnAutoUpdateHosts = GUICtrlCreateButton("Schedule updates", 227, 270, 140, 32)
+	$idBtnAutoUpdateHosts = GUICtrlCreateButton("计划更新", 227, 270, 140, 32)
 	GUICtrlSetFont($idBtnAutoUpdateHosts, 9, 400, 0, "Segoe UI")
 
 	GUICtrlCreateLabel( _
-			"Manage the hosts file to block domains associated with popups." & @CRLF & @CRLF & _
-			"Update once from the list URL, edit manually, or restore a backup." & @CRLF & @CRLF & _
-			"Use Schedule Updates to set up a scheduled task that refreshes on its own." & @CRLF & @CRLF & _
-			"Keeping the hosts file updated helps maintain protection over time.", _
+			"管理 hosts 文件，阻止与弹窗相关的域名。" & @CRLF & @CRLF & _
+			"可从列表网址更新一次、手动编辑或还原备份。" & @CRLF & @CRLF & _
+			"使用“计划更新”可创建自动刷新的计划任务。" & @CRLF & @CRLF & _
+			"持续更新 hosts 文件有助于长期保持拦截效果。", _
 			(595 - 580) / 2, 410, 580, 130, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
 
 	$idBtnHostsInfo = GUICtrlCreateDummy()
 
-	$g_idHyperlinkHosts = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkHosts, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkHosts, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkHosts, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkHosts, 0)
-
 	GUICtrlCreateTabItem("")
 
-	Local $hProxyTab = GUICtrlCreateTabItem("Proxy")
+	Local $hProxyTab = GUICtrlCreateTabItem("代理")
 
-	GUICtrlCreateLabel("PROXY", (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
+	GUICtrlCreateLabel("代理", (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
 	GUICtrlSetFont(-1, 10, 700)
 
-	$idBtnProxySetup = GUICtrlCreateButton("Setup", 227, 90, 140, 32)
+	$idBtnProxySetup = GUICtrlCreateButton("安装", 227, 90, 140, 32)
 	GUICtrlSetFont($idBtnProxySetup, 9, 400, 0, "Segoe UI")
 
-	$idBtnProxyTargeting = GUICtrlCreateButton("Targeting", 227, 135, 140, 32)
+	$idBtnProxyTargeting = GUICtrlCreateButton("目标应用", 227, 135, 140, 32)
 	GUICtrlSetFont($idBtnProxyTargeting, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnProxyTargeting, $GUI_DISABLE)
 
-	$idBtnProxyStartStop = GUICtrlCreateButton("Start / Stop Proxy", 227, 180, 140, 32)
+	$idBtnProxyStartStop = GUICtrlCreateButton("启动 / 停止代理", 227, 180, 140, 32)
 	GUICtrlSetFont($idBtnProxyStartStop, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnProxyStartStop, $GUI_DISABLE)
 
-	$idBtnProxyOpenLog = GUICtrlCreateButton("Open Log", 227, 225, 140, 32)
+	$idBtnProxyOpenLog = GUICtrlCreateButton("打开日志", 227, 225, 140, 32)
 	GUICtrlSetFont($idBtnProxyOpenLog, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnProxyOpenLog, $GUI_DISABLE)
 
-	$idBtnProxyRemove = GUICtrlCreateButton("Remove", 227, 270, 140, 32)
+	$idBtnProxyRemove = GUICtrlCreateButton("移除", 227, 270, 140, 32)
 	GUICtrlSetFont($idBtnProxyRemove, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnProxyRemove, $GUI_DISABLE)
 
-	$g_idLblProxyStatus = GUICtrlCreateLabel("Status: (refreshing...)", 10, 330, 575, 20, $SS_CENTER)
+	$g_idLblProxyStatus = GUICtrlCreateLabel("状态：（正在刷新……）", 10, 330, 575, 20, $SS_CENTER)
 	GUICtrlSetFont($g_idLblProxyStatus, 9, 700, 0, "Segoe UI")
 	GUICtrlSetColor($g_idLblProxyStatus, 0x555555)
 
 	GUICtrlCreateLabel( _
-			"Manage mitmproxy to intercept and neutralise Adobe heartbeat traffic." & @CRLF & @CRLF & _
-			"Setup installs mitmproxy and trusts the certificate." & @CRLF & @CRLF & _
-			"Start / Stop Proxy runs the proxy. Targeting sets Global or specific apps." & @CRLF & @CRLF & _
-			"Open Log views activity. Remove uninstalls everything cleanly." & @CRLF & @CRLF & _
-			"Credit to MP7909.", _
-			(595 - 580) / 2, 410, 580, 160, $SS_CENTER)
+			"管理 mitmproxy，以拦截并阻断 Adobe 心跳通信。" & @CRLF & @CRLF & _
+			"“安装”会部署 mitmproxy 并信任其证书。" & @CRLF & @CRLF & _
+			"“启动 / 停止代理”控制运行；“目标应用”可设置全局或指定应用。" & @CRLF & @CRLF & _
+			"“打开日志”查看活动；“移除”会完整卸载相关组件。", _
+			(595 - 580) / 2, 410, 580, 130, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
-
-	$g_idHyperlinkProxy = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkProxy, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkProxy, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkProxy, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkProxy, 0)
 
 	GUICtrlCreateTabItem("")
 
-	Local $hFirewallTab = GUICtrlCreateTabItem("Firewall")
+	Local $hFirewallTab = GUICtrlCreateTabItem("防火墙")
 
-	$sCleanFirewallText = "FIREWALL"
+	$sCleanFirewallText = "防火墙"
 	$idLabelCleanFirewall = GUICtrlCreateLabel($sCleanFirewallText, (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
 	GUICtrlSetFont($idLabelCleanFirewall, 10, 700)
 
-	$idBtnCreateFW = GUICtrlCreateButton("Add Rules", 227, 90, 140, 32)
+	$idBtnCreateFW = GUICtrlCreateButton("添加规则", 227, 90, 140, 32)
 	GUICtrlSetFont($idBtnCreateFW, 9, 400, 0, "Segoe UI")
 
-	$idBtnToggleFW = GUICtrlCreateButton("Toggle Rules", 227, 135, 140, 32)
+	$idBtnToggleFW = GUICtrlCreateButton("切换规则", 227, 135, 140, 32)
 	GUICtrlSetFont($idBtnToggleFW, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnToggleFW, $GUI_DISABLE)
 
-	$idBtnRemoveFW = GUICtrlCreateButton("Remove Rules", 227, 180, 140, 32)
+	$idBtnRemoveFW = GUICtrlCreateButton("移除规则", 227, 180, 140, 32)
 	GUICtrlSetFont($idBtnRemoveFW, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnRemoveFW, $GUI_DISABLE)
 
-	$idBtnOpenWF = GUICtrlCreateButton("Open Windows Firewall", 227, 225, 140, 32)
+	$idBtnOpenWF = GUICtrlCreateButton("打开 Windows 防火墙", 217, 225, 160, 32)
 	GUICtrlSetFont($idBtnOpenWF, 9, 400, 0, "Segoe UI")
 
 	GUICtrlCreateLabel( _
-			"Manage Firewall rules to block applications from internet access, which may reduce popups." & @CRLF & @CRLF & _
-			"Add or remove outbound rules, enable or disable them, or delete all rules." & @CRLF & @CRLF & _
-			"Note: Manages Windows Defender Firewall only - third-party firewalls need manual setup." & @CRLF & @CRLF & _
-			"Some application features may not function when internet access is blocked.", _
+			"管理防火墙规则，阻止应用联网，从而减少弹窗。" & @CRLF & @CRLF & _
+			"可添加或移除出站规则、启用或禁用规则，也可删除全部规则。" & @CRLF & @CRLF & _
+			"注意：这里只管理 Windows Defender 防火墙；第三方防火墙需手动设置。" & @CRLF & @CRLF & _
+			"阻止联网后，部分应用功能可能无法使用。", _
 			(595 - 580) / 2, 410, 580, 130, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
 
 	$idBtnFirewallInfo = GUICtrlCreateDummy()
 
-	$g_idHyperlinkFW = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkFW, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkFW, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkFW, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkFW, 0)
-
 	GUICtrlCreateTabItem("")
 
-	$hPopupTab = GUICtrlCreateTabItem("AGS")
+	$hPopupTab = GUICtrlCreateTabItem("正版服务")
 
-	$sRemoveAGSText = "GENUINE SERVICES"
+	$sRemoveAGSText = "ADOBE 正版服务"
 	$idLabelRemoveAGS = GUICtrlCreateLabel($sRemoveAGSText, (595 - 580) / 2, 50, 580, 20, $SS_CENTER)
 	GUICtrlSetFont($idLabelRemoveAGS, 10, 700)
 
-	$idBtnRemoveAGS = GUICtrlCreateButton("Remove AGS", 227, 90, 140, 32)
+	$idBtnRemoveAGS = GUICtrlCreateButton("移除 AGS", 227, 90, 140, 32)
 	GUICtrlSetFont($idBtnRemoveAGS, 9, 400, 0, "Segoe UI")
 
-	$idBtnDummyAGS = GUICtrlCreateButton("Dummy AGS", 227, 135, 140, 32)
+	$idBtnDummyAGS = GUICtrlCreateButton("替代 AGS", 227, 135, 140, 32)
 	GUICtrlSetFont($idBtnDummyAGS, 9, 400, 0, "Segoe UI")
 
-	$idBtnRestoreAGS = GUICtrlCreateButton("Restore AGS", 227, 180, 140, 32)
+	$idBtnRestoreAGS = GUICtrlCreateButton("还原 AGS", 227, 180, 140, 32)
 	GUICtrlSetFont($idBtnRestoreAGS, 9, 400, 0, "Segoe UI")
 	GUICtrlSetState($idBtnRestoreAGS, $GUI_DISABLE)
 
 	GUICtrlCreateLabel( _
-			"Stops 'Adobe Genuine Service Alert' popups by removing the AGS components." & @CRLF & @CRLF & _
-			"Or redirecting the services using dummy files to prevent background activity." & @CRLF & @CRLF & _
-			"Use Restore AGS to remove all dummies and restore back to originals." & @CRLF & @CRLF & _
-			"Note: This applies only to popups with the 'Genuine Service Alert' header.", _
+			"移除 AGS 组件，可阻止“Adobe 正版服务警告”弹窗。" & @CRLF & @CRLF & _
+			"也可以使用替代文件重定向服务，阻止其后台活动。" & @CRLF & @CRLF & _
+			"使用“还原 AGS”可移除全部替代文件并恢复原文件。" & @CRLF & @CRLF & _
+			"注意：此功能仅处理标题为“正版服务警告”的弹窗。", _
 			(595 - 580) / 2, 410, 580, 130, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
 
 	$idBtnAGSInfo = GUICtrlCreateDummy()
 
-	$g_idHyperlinkAGS = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkAGS, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkAGS, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkAGS, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkAGS, 0)
-	$g_idHyperlinkPopup = $g_idHyperlinkAGS
-
 	GUICtrlCreateTabItem("")
 
-	$hLogTab = GUICtrlCreateTabItem("Log")
+	$hLogTab = GUICtrlCreateTabItem("日志")
 	$idMemo = GUICtrlCreateEdit("", 10, 35, 575, 472, BitOR($ES_READONLY, $ES_CENTER, $WS_DISABLED))
 	GUICtrlSetResizing(-1, $GUI_DOCKVCENTER)
 	GUICtrlSetLimit($idMemo, 0x7FFFFFFF)
@@ -1924,21 +1882,15 @@ Func MainGui()
 	GUICtrlSetResizing(-1, $GUI_DOCKVCENTER)
 	GUICtrlSetLimit($idLog, 0x7FFFFFFF)
 	GUICtrlSetState($idLog, $GUI_HIDE)
-	GUICtrlSetData($idLog, "Activity Log" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP Version: " & $g_Version & @CRLF & "Config Version: " & $ConfigVerVar & @CRLF)
+	GUICtrlSetData($idLog, "活动日志" & @CRLF & "- - - - - - - - - - -" & @CRLF & @CRLF & "GenP 版本：" & $g_Version & @CRLF & "配置版本：" & $ConfigVerVar & @CRLF)
 
-	$idBtnCopyLog = GUICtrlCreateButton("Copy", 247, 520, 110, 32)
+	$idBtnCopyLog = GUICtrlCreateButton("复制", 247, 520, 110, 32)
 	GUICtrlSetImage(-1, "imageres.dll", -77, 0)
 	GUICtrlSetResizing(-1, $GUI_DOCKAUTO)
 
-	$g_idHyperlinkLog = GUICtrlCreateLabel("GenP Wiki && Guides", (595 - 160) / 2, 580, 160, 24, BitOR($SS_CENTER, $SS_NOTIFY))
-	GUICtrlSetFont($g_idHyperlinkLog, 9, 400, 0, "Segoe UI")
-	GUICtrlSetColor($g_idHyperlinkLog, 0x000000)
-	GUICtrlSetBkColor($g_idHyperlinkLog, $GUI_BKCOLOR_TRANSPARENT)
-	GUICtrlSetCursor($g_idHyperlinkLog, 0)
-
 	GUICtrlCreateTabItem("")
 
-	MemoWrite(@CRLF & "Path" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "Waiting for user action.")
+	MemoWrite(@CRLF & "路径" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "等待用户操作。")
 
 	GUISetState(@SW_SHOW)
 	Global $g_aOptCtrls[16] = [ _
@@ -2257,10 +2209,10 @@ Func _PickExtraAdobeDrives($sWinDrv, $sMyDrv)
 	Local $aMainPos2 = WinGetPos($MyhGUI)
 	Local $iPickX = $aMainPos2[0] + ($aMainPos2[2] - 280) / 2
 	Local $iPickY = $aMainPos2[1] + ($aMainPos2[3] - $iH)  / 2
-	Local $hPick = GUICreate("Additional Drive Scan", 280, $iH, $iPickX, $iPickY, _
+	Local $hPick = GUICreate("额外磁盘扫描", 280, $iH, $iPickX, $iPickY, _
 			BitOR($WS_POPUP, $WS_CAPTION, $WS_SYSMENU), $WS_EX_TOPMOST)
-	GUICtrlCreateLabel("Scan for leftover Adobe .bak files on:", 10, 12, 260, 18)
-	GUICtrlCreateLabel("(Drives already covered are excluded)", 10, 30, 260, 16)
+	GUICtrlCreateLabel("扫描磁盘中的 Adobe 残留 .bak 文件：", 10, 12, 260, 18)
+	GUICtrlCreateLabel("（已覆盖的磁盘不会重复扫描）", 10, 30, 260, 16)
 	GUICtrlSetFont(-1, 8, 400, 2, "Segoe UI")
 
 	Local $aChk[UBound($aShow)]
@@ -2271,8 +2223,8 @@ Func _PickExtraAdobeDrives($sWinDrv, $sMyDrv)
 		$aChk[$i] = GUICtrlCreateCheckbox($sLabel, 20, 55 + $i * 30, 240, 25, $BS_AUTOCHECKBOX)
 	Next
 
-	Local $idOK   = GUICtrlCreateButton("OK",   55, 55 + UBound($aShow) * 30 + 8, 75, 28)
-	Local $idSkip = GUICtrlCreateButton("Skip", 150, 55 + UBound($aShow) * 30 + 8, 75, 28)
+	Local $idOK   = GUICtrlCreateButton("确定", 55, 55 + UBound($aShow) * 30 + 8, 75, 28)
+	Local $idSkip = GUICtrlCreateButton("跳过", 150, 55 + UBound($aShow) * 30 + 8, 75, 28)
 	GUISetState(@SW_DISABLE, $MyhGUI)
 	GUISetState(@SW_SHOW, $hPick)
 
@@ -2303,11 +2255,11 @@ Func _RunFinalCleanCheck()
 
 	Local $aFCCPos = WinGetPos($MyhGUI)
 	Local $iFCCW = 380, $iFCCH = 76
-	Local $hFCCStatus = GUICreate("Final Adobe Clean Check", $iFCCW, $iFCCH, _
+	Local $hFCCStatus = GUICreate("Adobe 最终清理检查", $iFCCW, $iFCCH, _
 			$aFCCPos[0] + ($aFCCPos[2] - $iFCCW) / 2, _
 			$aFCCPos[1] + ($aFCCPos[3] - $iFCCH) / 2, _
 			BitOR($WS_POPUP, $WS_CAPTION), $WS_EX_TOPMOST)
-	Local $idStepLabel = GUICtrlCreateLabel("Starting...", 10, 12, $iFCCW - 20, 20)
+	Local $idStepLabel = GUICtrlCreateLabel("正在开始……", 10, 12, $iFCCW - 20, 20)
 	Local $idStepBar   = GUICtrlCreateProgress(10, 42, $iFCCW - 20, 16)
 	GUISetState(@SW_DISABLE, $MyhGUI)
 	GUISetState(@SW_SHOW, $hFCCStatus)
@@ -2767,15 +2719,15 @@ Func FillListViewWithInfo()
 	_GUICtrlListView_AddColumn($g_idListview, "", 571, 2)
 
 	Local $sTitle = "GenP v4.2.1", $sOptionsLine = ""
-	If Number($bShowBetaApps) Then $sOptionsLine &= "Beta included"
+	If Number($bShowBetaApps) Then $sOptionsLine &= "包含 Beta 应用"
 	If Number($bEnableGood1) Then
-		$sOptionsLine &= ($sOptionsLine <> "" ? " / " : "") & "Good1 patch enabled"
+		$sOptionsLine &= ($sOptionsLine <> "" ? " / " : "") & "已启用 Good1 修补"
 	EndIf
 	If Number($bEnableNGLFirewall) Then
-		$sOptionsLine &= ($sOptionsLine <> "" ? " / " : "") & "NGL firewall active"
+		$sOptionsLine &= ($sOptionsLine <> "" ? " / " : "") & "NGL 防火墙已启用"
 	EndIf
 
-	Local $iTotalRows = 16
+	Local $iTotalRows = 14
 	If $sOptionsLine <> "" Then $iTotalRows += 1
 
 	For $i = 0 To $iTotalRows - 1
@@ -2783,10 +2735,6 @@ Func FillListViewWithInfo()
 	Next
 
 	Local $line = 1
-	_GUICtrlListView_SetItemText($g_idListview, $line, "GenP", 1)
-	$line += 1
-	_GUICtrlListView_SetItemText($g_idListview, $line, "Originally created by uncia", 1)
-	$line += 1
 	_GUICtrlListView_SetItemText($g_idListview, $line, "--------------------", 1)
 	$line += 1
 	_GUICtrlListView_SetItemText($g_idListview, $line, $sTitle, 1)
@@ -2799,16 +2747,16 @@ Func FillListViewWithInfo()
 
 	_GUICtrlListView_SetItemText($g_idListview, $line, "--------------------", 1)
 	$line += 2
-	_GUICtrlListView_SetItemText($g_idListview, $line, "Current search path:", 1)
+	_GUICtrlListView_SetItemText($g_idListview, $line, "当前搜索路径：", 1)
 	$line += 1
 	_GUICtrlListView_SetItemText($g_idListview, $line, $MyDefPath, 1)
 	$line += 1
-	_GUICtrlListView_SetItemText($g_idListview, $line, "Press 'Path' to change the search location", 1)
+	_GUICtrlListView_SetItemText($g_idListview, $line, "点击“路径”可更改搜索位置", 1)
 
 	$line += 2
-	_GUICtrlListView_SetItemText($g_idListview, $line, "Press 'Search' to scan for installed applications", 1)
+	_GUICtrlListView_SetItemText($g_idListview, $line, "点击“搜索”扫描已安装的应用", 1)
 	$line += 1
-	_GUICtrlListView_SetItemText($g_idListview, $line, "Press 'Patch' to apply patches to selected files", 1)
+	_GUICtrlListView_SetItemText($g_idListview, $line, "点击“修补”处理选中的文件", 1)
 
 	Local $hHeader = _GUICtrlListView_GetHeader($g_idListview)
 	_WinAPI_EnableWindow($hHeader, False)
@@ -2829,8 +2777,8 @@ Func FillListViewWithFiles()
 		_GUICtrlListView_DeleteColumn($g_idListview, 0)
 	WEnd
 	_GUICtrlListView_AddColumn($g_idListview, "", 20)
-	_GUICtrlListView_AddColumn($g_idListview, "  App File                                                         Collapse All", 445, 0)
-	_GUICtrlListView_AddColumn($g_idListview, "Status", 85, 2)
+	_GUICtrlListView_AddColumn($g_idListview, "  应用文件                                                         全部折叠", 445, 0)
+	_GUICtrlListView_AddColumn($g_idListview, "状态", 85, 2)
 	_GUICtrlListView_SetExtendedListViewStyle($g_idListview, BitOR($LVS_EX_CHECKBOXES, $LVS_EX_FULLROWSELECT, $LVS_EX_GRIDLINES, $LVS_EX_DOUBLEBUFFER))
 	_GUICtrlListView_EnableGroupView($g_idListview, True)
 
@@ -2840,7 +2788,7 @@ Func FillListViewWithFiles()
 	_WinAPI_SetWindowLong($hHeader, $GWL_STYLE, BitOR($iHdrStyle, 0x0800))
 
 	If UBound($g_aAllFiles) > 0 Then
-		MemoWrite(@CRLF & UBound($g_aAllFiles) & " File(s) were found in " & Round(TimerDiff($timestamp) / 1000, 0) & " second(s) at:" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "Press the 'Patch Files'")
+		MemoWrite(@CRLF & "在 " & Round(TimerDiff($timestamp) / 1000, 0) & " 秒内找到 " & UBound($g_aAllFiles) & " 个文件：" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "请点击“修补”")
 		LogWrite(1, UBound($g_aAllFiles) & " File(s) were found in " & Round(TimerDiff($timestamp) / 1000, 0) & " second(s)")
 		$fFilesListed = 1
 		$g_bSearchCompleted = True
@@ -2849,7 +2797,7 @@ Func FillListViewWithFiles()
 		_SyncWinTrustFromDisk()
 		_RefreshGroupHeadersFromWT()
 	Else
-		MemoWrite(@CRLF & "Nothing was found in" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "waiting for user action")
+		MemoWrite(@CRLF & "未在以下位置找到可处理文件" & @CRLF & "---" & @CRLF & $MyDefPath & @CRLF & "---" & @CRLF & "等待用户操作")
 		LogWrite(1, "Nothing was found in " & $MyDefPath)
 		$fFilesListed = 0
 		$g_bSearchCompleted = False
@@ -2897,7 +2845,7 @@ Func _ApplyVisibilityFilter($bInitial = False)
 		ReDim $aVisible[$iV + 1][3]
 		$aVisible[$iV][0] = $iV
 		$aVisible[$iV][1] = $sPath
-		$aVisible[$iV][2] = FileExists($sPath & ".bak") ? "Patched" : "Unpatched"
+		$aVisible[$iV][2] = FileExists($sPath & ".bak") ? $g_sUiStatusPatched : $g_sUiStatusUnpatched
 		_ArrayAdd($FilesToPatch, $sPath)
 	Next
 
@@ -3105,7 +3053,7 @@ Func _ApplyModifiedFilter()
 	_SendMessageL($g_idListview, $WM_SETREDRAW, False, 0)
 	While $iRow >= 0
 		Local $sStatus = _GUICtrlListView_GetItemText($g_idListview, $iRow, 2)
-		If $sStatus = "Patched" Then
+		If $sStatus = $g_sUiStatusPatched Then
 			_GUICtrlListView_DeleteItem($g_idListview, $iRow)
 			$iRemoved += 1
 		Else
@@ -3261,29 +3209,29 @@ Func _VerifyListedFiles($bSilent = False)
 
 	For $i = 0 To $iCount - 1
 		Local $sPath = _GUICtrlListView_GetItemText($idListview, $i, 1)
-		Local $sDisplayStatus = "Unpatched"
+		Local $sDisplayStatus = $g_sUiStatusUnpatched
 
 		If Not FileExists($sPath) Then
 			$iMissing += 1
 		Else
 			Local $iUxp = _UXPPatchedState($sPath)
 			If $iUxp = 1 Then
-				$sDisplayStatus = "Patched"
+				$sDisplayStatus = $g_sUiStatusPatched
 				$iPatched += 1
 			ElseIf $iUxp = 0 Then
-				$sDisplayStatus = "Unpatched"
+				$sDisplayStatus = $g_sUiStatusUnpatched
 				$iUnpatched += 1
 			Else
-				If Not $bSilent Then _GUICtrlListView_SetItemText($idListview, $i, "Verifying...", 2)
+				If Not $bSilent Then _GUICtrlListView_SetItemText($idListview, $i, $g_sUiStatusVerifying, 2)
 				_SubProgressWrite(50)
 				Local $sMD5 = StringLower(StringTrimLeft(String(_Crypt_HashFile($sPath, $CALG_MD5)), 2))
 				Local $sKey = StringLower($sPath)
 
 				If $mPatched.Exists($sKey) And $mPatched.Item($sKey) = $sMD5 Then
-					$sDisplayStatus = "Patched"
+					$sDisplayStatus = $g_sUiStatusPatched
 					$iPatched += 1
 				ElseIf $mOriginal.Exists($sKey) And $mOriginal.Item($sKey) = $sMD5 Then
-					$sDisplayStatus = "Unpatched"
+					$sDisplayStatus = $g_sUiStatusUnpatched
 					$iUnpatched += 1
 				ElseIf $mPatched.Exists($sKey) Or $mOriginal.Exists($sKey) Then
 					$iModified += 1
@@ -3375,43 +3323,43 @@ Func _ShowStatusScreen($sMode, $sDir = "")
 
 	Switch $sMode
 		Case "scanning"
-			_GUICtrlListView_SetItemText($g_idListview, 1, "Scanning for Installed Applications:", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 2, "Checking: " & $sDisplayDir, 1)
+			_GUICtrlListView_SetItemText($g_idListview, 1, "正在扫描已安装的应用：", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 2, "正在检查：" & $sDisplayDir, 1)
 			_GUICtrlListView_SetItemText($g_idListview, 3, "--------------------", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 4, "Applications found: " & $g_AppCount, 1)
-			_GUICtrlListView_SetItemText($g_idListview, 5, "Files eligible: " & _FormatNumber($g_FilesToPatchCount), 1)
+			_GUICtrlListView_SetItemText($g_idListview, 4, "已找到应用：" & $g_AppCount, 1)
+			_GUICtrlListView_SetItemText($g_idListview, 5, "可处理文件：" & _FormatNumber($g_FilesToPatchCount), 1)
 			_GUICtrlListView_SetItemText($g_idListview, 6, "", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 7, "Please wait", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 7, "请稍候", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 8, _AnimatedDotsOnly(), 1)
 
 		Case "complete"
-			_GUICtrlListView_SetItemText($g_idListview, 1, "Scanning for Installed Applications:", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 2, "Scan complete.", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 1, "正在扫描已安装的应用：", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 2, "扫描完成。", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 3, "--------------------", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 4, "Applications found: " & $g_AppCount, 1)
-			_GUICtrlListView_SetItemText($g_idListview, 5, "Files eligible: " & _FormatNumber($g_FilesToPatchCount), 1)
+			_GUICtrlListView_SetItemText($g_idListview, 4, "已找到应用：" & $g_AppCount, 1)
+			_GUICtrlListView_SetItemText($g_idListview, 5, "可处理文件：" & _FormatNumber($g_FilesToPatchCount), 1)
 			_GUICtrlListView_SetItemText($g_idListview, 6, "", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 7, "Loading detected applications...", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 7, "正在加载检测到的应用……", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 8, "", 1)
 
 		Case "stopped"
-			_GUICtrlListView_SetItemText($g_idListview, 1, "Scanning for Installed Applications:", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 2, "Scan stopped by user.", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 1, "正在扫描已安装的应用：", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 2, "用户已停止扫描。", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 3, "--------------------", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 4, "Applications found: " & $g_AppCount, 1)
-			_GUICtrlListView_SetItemText($g_idListview, 5, "Files eligible: " & _FormatNumber($g_FilesToPatchCount), 1)
+			_GUICtrlListView_SetItemText($g_idListview, 4, "已找到应用：" & $g_AppCount, 1)
+			_GUICtrlListView_SetItemText($g_idListview, 5, "可处理文件：" & _FormatNumber($g_FilesToPatchCount), 1)
 			_GUICtrlListView_SetItemText($g_idListview, 6, "", 1)
 			If $sDir <> "" Then
-				_GUICtrlListView_SetItemText($g_idListview, 7, "Last folder: " & $sDir, 1)
+				_GUICtrlListView_SetItemText($g_idListview, 7, "最后检查的文件夹：" & $sDir, 1)
 			Else
 				_GUICtrlListView_SetItemText($g_idListview, 7, "", 1)
 			EndIf
 			_GUICtrlListView_SetItemText($g_idListview, 8, "", 1)
 
 		Case "patching"
-			_GUICtrlListView_SetItemText($g_idListview, 1, "Patching files...", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 1, "正在修补文件……", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 3, "--------------------", 1)
-			_GUICtrlListView_SetItemText($g_idListview, 7, "Please wait", 1)
+			_GUICtrlListView_SetItemText($g_idListview, 7, "请稍候", 1)
 			_GUICtrlListView_SetItemText($g_idListview, 8, _AnimatedDotsOnly(), 1)
 
 		Case Else
@@ -5501,7 +5449,7 @@ Func _CleanOrphanBaks(ByRef $aRestoredPaths)
 	Local $iCount = _GUICtrlListView_GetItemCount($g_idListview)
 	For $i = 0 To $iCount - 1
 		Local $sStatus = _GUICtrlListView_GetItemText($g_idListview, $i, 2)
-		If $sStatus <> "Patched" Then ContinueLoop
+		If $sStatus <> $g_sUiStatusPatched Then ContinueLoop
 		Local $sPath = _GUICtrlListView_GetItemText($g_idListview, $i, 1)
 		If $sPath = "" Then ContinueLoop
 		Local $sName = StringLower(StringRegExpReplace($sPath, "^.*\\", ""))
@@ -6237,25 +6185,25 @@ Func _BuildAppsToolbar()
 		Local $iBlankH = 34
 		Local $iH = $iPad * 2 + $iHdr + $iBlankH + $iGap + $iMinBtnH
 
-		$g_hAppsBar = GUICreate("GenP v" & $g_Version & " Toolbar", $iW, $iH, $iX, $iY, _
+		$g_hAppsBar = GUICreate("GenP v" & $g_Version & " 启动栏", $iW, $iH, $iX, $iY, _
 				BitOR($WS_CAPTION, $WS_POPUP, $WS_SYSMENU), $WS_EX_TOPMOST, $MyhGUI)
 		If FileExists(@ScriptDir & "\Skull.ico") Then GUISetIcon(@ScriptDir & "\Skull.ico", 0, $g_hAppsBar)
-		GUICtrlCreateLabel("App Launch Toolbar", $iPad, $iPad, $iW - $iPad * 2, 16)
+		GUICtrlCreateLabel("应用启动栏", $iPad, $iPad, $iW - $iPad * 2, 16)
 		GUICtrlSetFont(-1, 7, 600, 0, "Segoe UI")
 
 		Local $sHint
 		If $g_sToolbarApps = "" Then
-			$sHint = "No apps selected. Click Configure" & @CRLF & "to choose up to 10 apps."
+			$sHint = "尚未选择应用。点击“配置”" & @CRLF & "可选择最多 10 个应用。"
 		Else
-			$sHint = "No configured apps found. Click" & @CRLF & "Configure to update your selection."
+			$sHint = "未找到已配置的应用。点击" & @CRLF & "“配置”可更新选择。"
 		EndIf
 		GUICtrlCreateLabel($sHint, $iPad, $iPad + $iHdr, $iW - $iPad * 2, $iBlankH)
 		GUICtrlSetFont(-1, 7, 400, 0, "Segoe UI")
 
 		Local $iFooterY = $iPad + $iHdr + $iBlankH + $iGap
-		$g_idAppsBarMinBtn    = GUICtrlCreateButton("Minimise GenP", $iPad, $iFooterY, $iBtnFW, $iMinBtnH)
+		$g_idAppsBarMinBtn    = GUICtrlCreateButton("最小化", $iPad, $iFooterY, $iBtnFW, $iMinBtnH)
 		GUICtrlSetFont($g_idAppsBarMinBtn, 7, 400, 0, "Segoe UI")
-		$g_idAppsBarConfigBtn = GUICtrlCreateButton("Configure", $iPad + $iBtnFW + $iGap, $iFooterY, $iContentW - $iBtnFW - $iGap, $iMinBtnH)
+		$g_idAppsBarConfigBtn = GUICtrlCreateButton("配置", $iPad + $iBtnFW + $iGap, $iFooterY, $iContentW - $iBtnFW - $iGap, $iMinBtnH)
 		GUICtrlSetFont($g_idAppsBarConfigBtn, 7, 400, 0, "Segoe UI")
 
 		GUISetState(@SW_SHOWNOACTIVATE, $g_hAppsBar)
@@ -6267,10 +6215,10 @@ Func _BuildAppsToolbar()
 	Local $iRows = Int(($iCount + $iCols - 1) / $iCols)
 	Local $iH = $iPad * 2 + $iHdr + $iRows * ($iBtnH + $iGap) + $iGap + $iMinBtnH
 
-	$g_hAppsBar = GUICreate("GenP v" & $g_Version & " Toolbar", $iW, $iH, $iX, $iY, _
+	$g_hAppsBar = GUICreate("GenP v" & $g_Version & " 启动栏", $iW, $iH, $iX, $iY, _
 			BitOR($WS_CAPTION, $WS_POPUP, $WS_SYSMENU), $WS_EX_TOPMOST, $MyhGUI)
 	If FileExists(@ScriptDir & "\Skull.ico") Then GUISetIcon(@ScriptDir & "\Skull.ico", 0, $g_hAppsBar)
-	GUICtrlCreateLabel("Open app (CC checks bypassed):", $iPad, $iPad, $iW - $iPad * 2, 16)
+	GUICtrlCreateLabel("启动应用（绕过 CC 检查）：", $iPad, $iPad, $iW - $iPad * 2, 16)
 	GUICtrlSetFont(-1, 7, 600, 0, "Segoe UI")
 
 	Local $iRow = 0, $iCol = 0
@@ -6292,9 +6240,9 @@ Func _BuildAppsToolbar()
 	Next
 
 	Local $iFooterY = $iPad + $iHdr + $iRows * ($iBtnH + $iGap) + $iGap
-	$g_idAppsBarMinBtn    = GUICtrlCreateButton("Minimise GenP", $iPad, $iFooterY, $iBtnFW, $iMinBtnH)
+	$g_idAppsBarMinBtn    = GUICtrlCreateButton("最小化", $iPad, $iFooterY, $iBtnFW, $iMinBtnH)
 	GUICtrlSetFont($g_idAppsBarMinBtn, 7, 400, 0, "Segoe UI")
-	$g_idAppsBarConfigBtn = GUICtrlCreateButton("Configure", $iPad + $iBtnFW + $iGap, $iFooterY, $iContentW - $iBtnFW - $iGap, $iMinBtnH)
+	$g_idAppsBarConfigBtn = GUICtrlCreateButton("配置", $iPad + $iBtnFW + $iGap, $iFooterY, $iContentW - $iBtnFW - $iGap, $iMinBtnH)
 	GUICtrlSetFont($g_idAppsBarConfigBtn, 7, 400, 0, "Segoe UI")
 
 	GUISetState(@SW_SHOWNOACTIVATE, $g_hAppsBar)
@@ -6355,9 +6303,9 @@ Func _ShowToolbarConfigDialog()
 	Local $iAllCount = UBound($aAllApps)
 
 	If $iAllCount = 0 Then
-		MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION, $MB_SYSTEMMODAL), "Configure Toolbar", _
-				"No patched apps found in patch_states.ini." & @CRLF & @CRLF & _
-				"Patch some apps first, then configure the toolbar.")
+		MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION, $MB_SYSTEMMODAL), "配置启动栏", _
+				"patch_states.ini 中没有已修补的应用。" & @CRLF & @CRLF & _
+				"请先修补一些应用，再配置启动栏。")
 		Return
 	EndIf
 
@@ -6366,11 +6314,11 @@ Func _ShowToolbarConfigDialog()
 	Local $iDW = 256, $iListH = 220
 	Local $iDH = 48 + $iListH + 10 + 26 + 10
 
-	Local $hDlg = GUICreate("Configure Toolbar", $iDW, $iDH, -1, -1, _
+	Local $hDlg = GUICreate("配置启动栏", $iDW, $iDH, -1, -1, _
 			BitOR($WS_CAPTION, $WS_POPUP, $WS_SYSMENU), $WS_EX_TOPMOST, $MyhGUI)
 	If FileExists(@ScriptDir & "\Skull.ico") Then GUISetIcon(@ScriptDir & "\Skull.ico", 0, $hDlg)
 
-	GUICtrlCreateLabel("Select up to 10 apps to show on the toolbar:", 10, 10, $iDW - 20, 30)
+	GUICtrlCreateLabel("选择要在启动栏显示的应用（最多 10 个）：", 10, 10, $iDW - 20, 30)
 	GUICtrlSetFont(-1, 7, 600, 0, "Segoe UI")
 
 	Local $idLV = GUICtrlCreateListView("", 10, 44, $iDW - 20, $iListH, _
@@ -6388,8 +6336,8 @@ Func _ShowToolbarConfigDialog()
 
 	Local $iBtnY = 44 + $iListH + 10
 	Local $iBW = Int(($iDW - 30) / 2)
-	Local $idOK     = GUICtrlCreateButton("OK",     10,         $iBtnY, $iBW, 26)
-	Local $idCancel = GUICtrlCreateButton("Cancel", 20 + $iBW,  $iBtnY, $iBW, 26)
+	Local $idOK     = GUICtrlCreateButton("确定", 10,        $iBtnY, $iBW, 26)
+	Local $idCancel = GUICtrlCreateButton("取消", 20 + $iBW, $iBtnY, $iBW, 26)
 
 	GUISetState(@SW_SHOW, $hDlg)
 
@@ -6413,15 +6361,15 @@ Func _ShowToolbarConfigDialog()
 			Local $iChecked = UBound($aCheckedNames)
 
 			If $iChecked = 0 Then
-				MsgBox(BitOR($MB_OK, $MB_ICONWARNING, $MB_SYSTEMMODAL), "Configure Toolbar", _
-						"Please select at least one app, or click Cancel to close without changes.")
+				MsgBox(BitOR($MB_OK, $MB_ICONWARNING, $MB_SYSTEMMODAL), "配置启动栏", _
+						"请至少选择一个应用，或点击“取消”放弃更改。")
 				ContinueLoop
 			EndIf
 
 			If $iChecked > 10 Then
-				MsgBox(BitOR($MB_OK, $MB_ICONWARNING, $MB_SYSTEMMODAL), "Configure Toolbar", _
-						"You have selected " & $iChecked & " apps. Maximum is 10." & @CRLF & @CRLF & _
-						"Please deselect " & ($iChecked - 10) & " app(s) and try again.")
+				MsgBox(BitOR($MB_OK, $MB_ICONWARNING, $MB_SYSTEMMODAL), "配置启动栏", _
+						"已选择 " & $iChecked & " 个应用，最多只能选择 10 个。" & @CRLF & @CRLF & _
+						"请取消选择 " & ($iChecked - 10) & " 个应用后重试。")
 				ContinueLoop
 			EndIf
 
@@ -6664,20 +6612,6 @@ EndFunc
 Func hL_WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
 	Local $iIDFrom = BitAND($wParam, 0xFFFF)
 	Local $iCode = BitShift($wParam, 16)
-
-	If $iCode = $STN_CLICKED Then
-		If $iIDFrom = $g_idHyperlinkMain Or $iIDFrom = $g_idHyperlinkLog Or $iIDFrom = $g_idHyperlinkOptions _
-				Or $iIDFrom = $g_idHyperlinkPopup Or $iIDFrom = $g_idHyperlinkFW _
-				Or $iIDFrom = $g_idHyperlinkHosts Or $iIDFrom = $g_idHyperlinkWT _
-				Or $iIDFrom = $g_idHyperlinkAGS Or $iIDFrom = $g_idHyperlinkProxy Then
-			Local $sUrl = Deloader($g_aSignature)
-			If TimerDiff($g_iHyperlinkClickTime) > 500 Then
-				ShellExecute($sUrl)
-				$g_iHyperlinkClickTime = TimerInit()
-			EndIf
-			Return $GUI_RUNDEFMSG
-		EndIf
-	EndIf
 
 	If $g_bMitmLogWindowExists And $hWnd = $g_hMitmLogWin Then
 		If $iIDFrom = $g_idBtnLogClose Then
@@ -7643,13 +7577,13 @@ Func _GudeCleanupDriveSelectGUI()
 	Local $iCount = $aAllDrives[0]
 	Local $iW = 320, $iH = 74 + ($iCount * 28) + 50
 	Local $aPos = WinGetPos($MyhGUI)
-	Local $hGUI = GUICreate("Gude Log Cleanup", $iW, $iH, _
+	Local $hGUI = GUICreate("Gude 日志清理", $iW, $iH, _
 			$aPos[0] + ($aPos[2] - $iW) / 2, $aPos[1] + ($aPos[3] - $iH) / 2, _
 			BitOR($WS_POPUP, $WS_CAPTION, $WS_SYSMENU), $WS_EX_TOPMOST)
 	GUISetFont(9, 400, 0, "Segoe UI", $hGUI)
 	GUISetIcon(@ScriptDir & "\Skull.ico", 0, $hGUI)
 
-	GUICtrlCreateLabel("Select drives to scan for gude log files:", 12, 12, $iW - 24, 18)
+	GUICtrlCreateLabel("选择要扫描 Gude 日志文件的磁盘：", 12, 12, $iW - 24, 18)
 
 	Local $aCheckboxes[$iCount]
 	Local $iY = 36
@@ -7665,8 +7599,8 @@ Func _GudeCleanupDriveSelectGUI()
 		$iY += 28
 	Next
 
-	Local $idBtnOK     = GUICtrlCreateButton("Set Up", 40,  $iY + 8, 90, 28)
-	Local $idBtnCancel = GUICtrlCreateButton("Skip",   190, $iY + 8, 90, 28)
+	Local $idBtnOK     = GUICtrlCreateButton("设置", 40,  $iY + 8, 90, 28)
+	Local $idBtnCancel = GUICtrlCreateButton("跳过", 190, $iY + 8, 90, 28)
 
 	GUISetState(@SW_DISABLE, $MyhGUI)
 	GUISetState(@SW_SHOW, $hGUI)
@@ -7751,22 +7685,22 @@ Func _ShowHostsAutoUpdateDialog()
 	Local $iW = 520
 	Local $iH = 400
 	Local $hParent = WinGetHandle("[ACTIVE]")
-	Local $hDlg = GUICreate("Hosts Schedule Updates", $iW, $iH, -1, -1, _
+	Local $hDlg = GUICreate("Hosts 计划更新", $iW, $iH, -1, -1, _
 			BitOR($WS_CAPTION, $WS_POPUPWINDOW, $WS_SYSMENU), -1, $hParent)
 	GUISetIcon(@ScriptDir & "\Skull.ico", 0, $hDlg)
 	GUISetFont(9, 400, 0, "Segoe UI", $hDlg)
 
-	GUICtrlCreateLabel("Status:", 15, 15, 50, 18)
-	Local $idLblStatus = GUICtrlCreateLabel("(checking...)", 70, 15, 430, 18)
+	GUICtrlCreateLabel("状态：", 15, 15, 50, 18)
+	Local $idLblStatus = GUICtrlCreateLabel("（检查中……）", 70, 15, 430, 18)
 	GUICtrlSetFont($idLblStatus, 9, 700)
 
-	GUICtrlCreateGroup("Method", 15, 45, 490, 175)
-	Local $idRadioBasic = GUICtrlCreateRadio("Basic - daily refresh, simple", 30, 70, 460, 22)
+	GUICtrlCreateGroup("方式", 15, 45, 490, 175)
+	Local $idRadioBasic = GUICtrlCreateRadio("基础 - 每日刷新，配置简单", 30, 70, 460, 22)
 	GUICtrlCreateLabel( _
 			"Runs GenP.exe -updatehosts once a day. No backup, no recovery." & @CRLF & _
 			"Same effect as clicking the Update Hosts button at the scheduled time.", _
 			50, 92, 450, 32)
-	Local $idRadioAdvanced = GUICtrlCreateRadio("Advanced - 3-hourly with backup, recovery, custom-entry merge", 30, 130, 460, 22)
+	Local $idRadioAdvanced = GUICtrlCreateRadio("高级 - 每 3 小时刷新，支持备份、恢复和自定义条目合并", 30, 130, 460, 22)
 	GUICtrlCreateLabel( _
 			"Runs every 3 hours via PowerShell script. Backs up hosts before each" & @CRLF & _
 			"update, verifies the new list, reverts on failure, logs everything." & @CRLF & _
@@ -7781,10 +7715,10 @@ Func _ShowHostsAutoUpdateDialog()
 			"with those entries. The script merges them on each run.", _
 			15, 230, 490, 50)
 
-	Local $idBtnSetup = GUICtrlCreateButton("Setup", 15, 290, 110, 32)
-	Local $idBtnRunNow = GUICtrlCreateButton("Run Now", 135, 290, 110, 32)
-	Local $idBtnRemove = GUICtrlCreateButton("Remove", 255, 290, 110, 32)
-	Local $idBtnClose = GUICtrlCreateButton("Close", 395, 290, 110, 32)
+	Local $idBtnSetup = GUICtrlCreateButton("设置", 15, 290, 110, 32)
+	Local $idBtnRunNow = GUICtrlCreateButton("立即运行", 135, 290, 110, 32)
+	Local $idBtnRemove = GUICtrlCreateButton("移除", 255, 290, 110, 32)
+	Local $idBtnClose = GUICtrlCreateButton("关闭", 395, 290, 110, 32)
 
 	_RefreshAutoUpdateDialogStatus($idLblStatus, $idBtnRunNow, $idBtnRemove)
 
@@ -8122,12 +8056,12 @@ Func _ShowProxyTargetingDialog()
 
 	Local $iDW = 300, $iListH = 190
 	Local $iDH = 56 + $iListH + 14 + 26 + 12
-	Local $hDlg = GUICreate("Proxy Targeting", $iDW, $iDH, -1, -1, _
+	Local $hDlg = GUICreate("代理目标应用", $iDW, $iDH, -1, -1, _
 		BitOR($WS_CAPTION, $WS_POPUP, $WS_SYSMENU), $WS_EX_TOPMOST, $MyhGUI)
 	If FileExists(@ScriptDir & "\Skull.ico") Then GUISetIcon(@ScriptDir & "\Skull.ico", 0, $hDlg)
 
-	Local $idRadGen = GUICtrlCreateRadio("Global - all Adobe traffic (Recommended)", 12, 10, $iDW - 24, 18)
-	Local $idRadTgt = GUICtrlCreateRadio("Targeted - only the apps ticked below (max 4)", 12, 30, $iDW - 24, 18)
+	Local $idRadGen = GUICtrlCreateRadio("全局 - 所有 Adobe 流量（推荐）", 12, 10, $iDW - 24, 18)
+	Local $idRadTgt = GUICtrlCreateRadio("指定 - 仅限下方勾选的应用（最多 4 个）", 12, 30, $iDW - 24, 18)
 	If $bTargeted Then
 		GUICtrlSetState($idRadTgt, $GUI_CHECKED)
 	Else
@@ -8151,8 +8085,8 @@ Func _ShowProxyTargetingDialog()
 
 	Local $iBtnY = 56 + $iListH + 14
 	Local $iBW = Int(($iDW - 36) / 2)
-	Local $idSave   = GUICtrlCreateButton("Save",   12,        $iBtnY, $iBW, 26)
-	Local $idCancel = GUICtrlCreateButton("Cancel", 24 + $iBW, $iBtnY, $iBW, 26)
+	Local $idSave   = GUICtrlCreateButton("保存", 12,        $iBtnY, $iBW, 26)
+	Local $idCancel = GUICtrlCreateButton("取消", 24 + $iBW, $iBtnY, $iBW, 26)
 
 	GUISetState(@SW_SHOW, $hDlg)
 
@@ -8180,11 +8114,11 @@ Func _ShowProxyTargetingDialog()
 			IniWrite($sINIPath, "Options", "ProxyMode", $sMode)
 			IniWrite($sINIPath, "Options", "ProxyApps", $sApps)
 			GUIDelete($hDlg)
-			Local $sBody = "Saved." & @CRLF & @CRLF & _
-				"Mode: " & ($sMode = "Target" ? "Targeted (" & $sApps & ")" : "Global (recommended)") & "."
-			If $iN > 4 Then $sBody &= @CRLF & @CRLF & "(You ticked " & $iN & " apps; the maximum is 4, so Global is used.)"
-			$sBody &= @CRLF & @CRLF & "If the proxy is running, use Start / Stop Proxy to restart it and apply the change."
-			MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION, $MB_SYSTEMMODAL), "Proxy Targeting", $sBody)
+			Local $sBody = "已保存。" & @CRLF & @CRLF & _
+				"模式：" & ($sMode = "Target" ? "指定应用（" & $sApps & "）" : "全局（推荐）") & "。"
+			If $iN > 4 Then $sBody &= @CRLF & @CRLF & "（你勾选了 " & $iN & " 个应用，超过上限 4 个，因此已使用全局模式。）"
+			$sBody &= @CRLF & @CRLF & "若代理正在运行，请使用“启动 / 停止代理”重启代理，使更改生效。"
+			MsgBox(BitOR($MB_OK, $MB_ICONINFORMATION, $MB_SYSTEMMODAL), "代理目标应用", $sBody)
 			Return
 		EndIf
 	WEnd
@@ -8217,31 +8151,31 @@ EndFunc
 Func _GetMitmproxyStatusText()
 	Local $sStatus
 	If _IsMitmproxyInstalled() Then
-		$sStatus = "Installed"
+		$sStatus = "已安装"
 	Else
-		$sStatus = "Not installed"
+		$sStatus = "未安装"
 	EndIf
 	If _IsMitmproxyRunning() Then
-		$sStatus &= "  |  Running"
+		$sStatus &= "  |  运行中"
 	Else
-		$sStatus &= "  |  Stopped"
+		$sStatus &= "  |  已停止"
 	EndIf
 	If _IsMitmproxyCertTrusted() Then
-		$sStatus &= "  |  Cert trusted"
+		$sStatus &= "  |  证书已信任"
 	Else
-		$sStatus &= "  |  Cert NOT trusted"
+		$sStatus &= "  |  证书未信任"
 	EndIf
 	If _IsWindowsProxyOn() Then
-		$sStatus &= "  |  Proxy ON"
+		$sStatus &= "  |  代理已开启"
 	Else
-		$sStatus &= "  |  Proxy off"
+		$sStatus &= "  |  代理已关闭"
 	EndIf
 	Return $sStatus
 EndFunc
 
 Func _RefreshProxyStatus()
 	If $g_idLblProxyStatus = 0 Then Return
-	GUICtrlSetData($g_idLblProxyStatus, "Status: " & _GetMitmproxyStatusText())
+	GUICtrlSetData($g_idLblProxyStatus, "状态：" & _GetMitmproxyStatusText())
 	If _IsMitmproxyInstalled() And _IsMitmproxyRunning() And _IsMitmproxyCertTrusted() And _IsWindowsProxyOn() Then
 		GUICtrlSetColor($g_idLblProxyStatus, 0x008000)
 	ElseIf _IsMitmproxyInstalled() Then
@@ -8257,7 +8191,7 @@ Func _CreateMitmproxyLogWindow()
 	Local $iW = 900, $iH = 600
 	Local $iBgColor = 0x1E1E1E
 
-	$g_hMitmLogWin = GUICreate("GenP - Heartbeat Suppression Log", $iW, $iH, -1, -1, _
+	$g_hMitmLogWin = GUICreate("GenP - 心跳拦截日志", $iW, $iH, -1, -1, _
 			BitOR($WS_OVERLAPPEDWINDOW, $WS_CLIPSIBLINGS), $WS_EX_TOOLWINDOW)
 	GUISetBkColor($iBgColor, $g_hMitmLogWin)
 
@@ -8267,27 +8201,27 @@ Func _CreateMitmproxyLogWindow()
 		GUISetIcon(@ScriptFullPath, 0, $g_hMitmLogWin)
 	EndIf
 
-	GUICtrlCreateLabel("Status:", 10, 14, 50, 18)
+	GUICtrlCreateLabel("状态：", 10, 14, 50, 18)
 	GUICtrlSetColor(-1, 0xFFFFFF)
 	GUICtrlSetBkColor(-1, $iBgColor)
 	GUICtrlSetFont(-1, 9, 400, 0, "Segoe UI")
 	GUICtrlSetResizing(-1, BitOR($GUI_DOCKLEFT, $GUI_DOCKTOP, $GUI_DOCKSIZE))
 
-	$g_idLblLogStatus = GUICtrlCreateLabel("(not started)", 65, 14, 250, 18)
+	$g_idLblLogStatus = GUICtrlCreateLabel("（未启动）", 65, 14, 250, 18)
 	GUICtrlSetColor($g_idLblLogStatus, 0xF44747)
 	GUICtrlSetBkColor($g_idLblLogStatus, $iBgColor)
 	GUICtrlSetFont($g_idLblLogStatus, 9, 700, 0, "Segoe UI")
 	GUICtrlSetResizing($g_idLblLogStatus, BitOR($GUI_DOCKLEFT, $GUI_DOCKTOP, $GUI_DOCKSIZE))
 
-	$g_idBtnLogClear = GUICtrlCreateButton("Clear", $iW - 305, 8, 90, 28)
+	$g_idBtnLogClear = GUICtrlCreateButton("清空", $iW - 305, 8, 90, 28)
 	GUICtrlSetFont($g_idBtnLogClear, 9, 400, 0, "Segoe UI")
 	GUICtrlSetResizing($g_idBtnLogClear, BitOR($GUI_DOCKRIGHT, $GUI_DOCKTOP, $GUI_DOCKSIZE))
 
-	$g_idBtnLogAddToHosts = GUICtrlCreateButton("Add hosts", $iW - 205, 8, 90, 28)
+	$g_idBtnLogAddToHosts = GUICtrlCreateButton("添加 hosts", $iW - 205, 8, 90, 28)
 	GUICtrlSetFont($g_idBtnLogAddToHosts, 9, 400, 0, "Segoe UI")
 	GUICtrlSetResizing($g_idBtnLogAddToHosts, BitOR($GUI_DOCKRIGHT, $GUI_DOCKTOP, $GUI_DOCKSIZE))
 
-	$g_idBtnLogClose = GUICtrlCreateButton("Close", $iW - 105, 8, 90, 28)
+	$g_idBtnLogClose = GUICtrlCreateButton("关闭", $iW - 105, 8, 90, 28)
 	GUICtrlSetFont($g_idBtnLogClose, 9, 400, 0, "Segoe UI")
 	GUICtrlSetResizing($g_idBtnLogClose, BitOR($GUI_DOCKRIGHT, $GUI_DOCKTOP, $GUI_DOCKSIZE))
 
@@ -8300,9 +8234,9 @@ Func _CreateMitmproxyLogWindow()
 
 	$g_bMitmLogWindowExists = True
 
-	_AppendToLogWindow("# GenP Heartbeat Suppression - Live Log" & @CRLF)
-	_AppendToLogWindow("# This window streams mitmdump's stdout/stderr in real time." & @CRLF)
-	_AppendToLogWindow("# Output begins when you Start the Proxy." & @CRLF & @CRLF)
+	_AppendToLogWindow("# GenP 心跳拦截 - 实时日志" & @CRLF)
+	_AppendToLogWindow("# 此窗口实时显示 mitmdump 的标准输出与错误输出。" & @CRLF)
+	_AppendToLogWindow("# 启动代理后开始输出。" & @CRLF & @CRLF)
 EndFunc
 
 Func _OpenMitmproxyLogWindow()
@@ -8323,10 +8257,10 @@ EndFunc
 Func _RefreshLogWindowStatus()
 	If Not $g_bMitmLogWindowExists Then Return
 	If _IsMitmproxyRunning() Then
-		GUICtrlSetData($g_idLblLogStatus, "Running (PID " & $g_iMitmproxyPID & ")")
+		GUICtrlSetData($g_idLblLogStatus, "运行中（PID " & $g_iMitmproxyPID & "）")
 		GUICtrlSetColor($g_idLblLogStatus, 0x4EC9B0)
 	Else
-		GUICtrlSetData($g_idLblLogStatus, "Stopped")
+		GUICtrlSetData($g_idLblLogStatus, "已停止")
 		GUICtrlSetColor($g_idLblLogStatus, 0xF44747)
 	EndIf
 EndFunc
@@ -9209,10 +9143,10 @@ Func ShowAppSelectionGUI($foundFiles)
 	Local $aMainPos = WinGetPos($MyhGUI)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 500) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 400) / 2
-	Local $hGUI = GUICreate("Select File(s) to Firewall", 500, 400, $iPopupX, $iPopupY)
-	Local $hSelectAll = GUICtrlCreateCheckbox("Select All", 10, 10)
+	Local $hGUI = GUICreate("选择要添加防火墙规则的文件", 500, 400, $iPopupX, $iPopupY)
+	Local $hSelectAll = GUICtrlCreateCheckbox("全部选中", 10, 10)
 	Local $hTreeView = GUICtrlCreateTreeView(10, 40, 480, 300, BitOR($TVS_CHECKBOXES, $TVS_HASBUTTONS, $TVS_HASLINES, $TVS_LINESATROOT))
-	Local $hOkButton = GUICtrlCreateButton("OK", 200, 350, 100, 30)
+	Local $hOkButton = GUICtrlCreateButton("确定", 200, 350, 100, 30)
 	GUISetState(@SW_SHOW)
 
 	Local $defPathClean = StringStripWS($MyDefPath, 3)
@@ -9351,10 +9285,10 @@ Func ShowToggleRulesGUI()
 	Local $aMainPos = WinGetPos($MyhGUI)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 300) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 150) / 2
-	Local $hToggleGUI = GUICreate("Toggle Rules", 300, 150, $iPopupX, $iPopupY)
-	Local $hEnableButton = GUICtrlCreateButton("Enable All", 50, 50, 100, 30)
-	Local $hDisableButton = GUICtrlCreateButton("Disable All", 150, 50, 100, 30)
-	Local $hCancelButton = GUICtrlCreateButton("Cancel", 100, 100, 100, 30)
+	Local $hToggleGUI = GUICreate("切换防火墙规则", 300, 150, $iPopupX, $iPopupY)
+	Local $hEnableButton = GUICtrlCreateButton("全部启用", 50, 50, 100, 30)
+	Local $hDisableButton = GUICtrlCreateButton("全部禁用", 150, 50, 100, 30)
+	Local $hCancelButton = GUICtrlCreateButton("取消", 100, 100, 100, 30)
 	GUISetState(@SW_SHOW)
 
 	While 1
@@ -9798,10 +9732,10 @@ Func RuntimeDllSelectionGUI($foundFiles, $operation)
 	Local $aMainPos = WinGetPos($MyhGUI)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 500) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 400) / 2
-	Local $hGUI = GUICreate("Unpack RuntimeInstaller", 500, 400, $iPopupX, $iPopupY)
-	Local $hSelectAll = GUICtrlCreateCheckbox("Select All", 10, 10)
+	Local $hGUI = GUICreate("解包 RuntimeInstaller", 500, 400, $iPopupX, $iPopupY)
+	Local $hSelectAll = GUICtrlCreateCheckbox("全部选中", 10, 10)
 	Local $hTreeView = GUICtrlCreateTreeView(10, 40, 480, 300, BitOR($TVS_CHECKBOXES, $TVS_HASBUTTONS, $TVS_HASLINES, $TVS_LINESATROOT))
-	Local $hOkButton = GUICtrlCreateButton("OK", 200, 350, 100, 30)
+	Local $hOkButton = GUICtrlCreateButton("确定", 200, 350, 100, 30)
 	GUISetState(@SW_SHOW)
 
 	Local $defPathClean = StringStripWS($MyDefPath, 3)
@@ -10119,10 +10053,10 @@ Func ManageWinTrust()
 	Local $aMainPos = WinGetPos($MyhGUI)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 300) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 150) / 2
-	Local $hGUI = GUICreate("Manage WinTrust", 300, 150, $iPopupX, $iPopupY)
-	Local $hTrustButton = GUICtrlCreateButton("Trust", 50, 50, 100, 30)
-	Local $hUntrustButton = GUICtrlCreateButton("Untrust", 150, 50, 100, 30)
-	Local $hCancelButton = GUICtrlCreateButton("Cancel", 100, 100, 100, 30)
+	Local $hGUI = GUICreate("管理 WinTrust", 300, 150, $iPopupX, $iPopupY)
+	Local $hTrustButton = GUICtrlCreateButton("信任", 50, 50, 100, 30)
+	Local $hUntrustButton = GUICtrlCreateButton("取消信任", 150, 50, 100, 30)
+	Local $hCancelButton = GUICtrlCreateButton("取消", 100, 100, 100, 30)
 	GUISetState(@SW_SHOW)
 
 	While 1
@@ -10496,9 +10430,9 @@ Func TrustSelectionGUI($foundFiles, $operation)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 500) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 400) / 2
 	Local $hGUI = GUICreate($operation, 500, 400, $iPopupX, $iPopupY)
-	Local $hSelectAll = GUICtrlCreateCheckbox("Select All", 10, 10)
+	Local $hSelectAll = GUICtrlCreateCheckbox("全部选中", 10, 10)
 	Local $hTreeView = GUICtrlCreateTreeView(10, 40, 480, 300, BitOR($TVS_CHECKBOXES, $TVS_HASBUTTONS, $TVS_HASLINES, $TVS_LINESATROOT))
-	Local $hOkButton = GUICtrlCreateButton("OK", 200, 350, 100, 30)
+	Local $hOkButton = GUICtrlCreateButton("确定", 200, 350, 100, 30)
 	GUISetState(@SW_SHOW)
 	$g_mBlockedParents = ObjCreate("Scripting.Dictionary")
 	$g_mBlockedAppPaths = ObjCreate("Scripting.Dictionary")
@@ -10638,7 +10572,7 @@ Func ManageDevOverride()
 	Local $aMainPos = WinGetPos($MyhGUI)
 	Local $iPopupX = $aMainPos[0] + ($aMainPos[2] - 380) / 2
 	Local $iPopupY = $aMainPos[1] + ($aMainPos[3] - 200) / 2
-	Local $hGUI = GUICreate("Manage WinTrust Override", 380, 200, $iPopupX, $iPopupY)
+	Local $hGUI = GUICreate("管理 WinTrust 覆盖", 380, 200, $iPopupX, $iPopupY)
 	Local $iIFEO    = RegRead($g_sWT_IFEO, "DevOverrideEnable")
 	Local $iIFEOErr = @error
 	Local $iSxS     = RegRead($g_sWT_SxS, "DevOverrideEnable")
@@ -10671,11 +10605,11 @@ Func ManageDevOverride()
 	Local $sOverallState
 	If ($iIFEOErr = 0 And $iIFEO = 1) And ($iSxSErr = 0 And $iSxS = 1) _
 			And ($iWT64Err = 0 And $iWT64 = 0) And ($iWT32Err = 0 And $iWT32 = 0) Then
-		$sOverallState = "All four keys set - override fully active."
+		$sOverallState = "四个注册表项均已设置 - 覆盖功能已完全启用。"
 	ElseIf $iIFEOErr <> 0 And $iSxSErr <> 0 And $iWT64Err <> 0 And $iWT32Err <> 0 Then
-		$sOverallState = "No keys set - override is disabled."
+		$sOverallState = "未设置任何注册表项 - 覆盖功能已禁用。"
 	Else
-		$sOverallState = "Partial state - some keys set, others not."
+		$sOverallState = "部分设置 - 仅部分注册表项已启用。"
 	EndIf
 	GUICtrlCreateLabel($sOverallState, 10, 10, 360, 20, $SS_CENTER)
 	GUICtrlSetFont(-1, 9, 700)
@@ -10683,9 +10617,9 @@ Func ManageDevOverride()
 	GUICtrlCreateLabel($sSxS  & "  SideBySide\DevOverrideEnable", 20, 56, 340, 16)
 	GUICtrlCreateLabel($sWT64 & "  Wintrust\Config\EnableCertPaddingCheck (64-bit)", 20, 74, 340, 16)
 	GUICtrlCreateLabel($sWT32 & "  Wow6432Node\...\EnableCertPaddingCheck (32-bit)", 20, 92, 340, 16)
-	Local $hAddButton    = GUICtrlCreateButton("Enable All",  30,  125, 100, 30)
-	Local $hRemoveButton = GUICtrlCreateButton("Restore All", 140, 125, 100, 30)
-	Local $hCancelButton = GUICtrlCreateButton("Cancel",      250, 125, 100, 30)
+	Local $hAddButton    = GUICtrlCreateButton("全部启用", 30, 125, 100, 30)
+	Local $hRemoveButton = GUICtrlCreateButton("全部还原", 140, 125, 100, 30)
+	Local $hCancelButton = GUICtrlCreateButton("取消", 250, 125, 100, 30)
 	GUISetState(@SW_SHOW)
 	While 1
 		Switch GUIGetMsg()
